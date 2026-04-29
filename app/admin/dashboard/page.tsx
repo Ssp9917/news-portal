@@ -15,7 +15,8 @@ import {
   LogOut, 
   ExternalLink,
   Trash2,
-  Edit
+  Edit,
+  Video
 } from "lucide-react";
 
 interface NewsItem {
@@ -25,6 +26,7 @@ interface NewsItem {
   date: string;
   image?: string;
   isBreaking?: boolean;
+  videoUrl?: string;
 }
 
 export default function AdminDashboard() {
@@ -210,6 +212,9 @@ export default function AdminDashboard() {
                             </div>
                             <span className="font-medium text-gray-900 line-clamp-2" title={item.title}>
                                 {item.title}
+                                {item.videoUrl && (
+                                    <Video className="w-3.5 h-3.5 inline-block ml-2 text-blue-500" />
+                                )}
                             </span>
                         </div>
                     </td>

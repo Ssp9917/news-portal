@@ -30,13 +30,6 @@ export async function PUT(
 
     // Set expiration if breaking, or reset if not
     if (body.isBreaking) {
-             // Only set new expiry if it's not already there or user explicitly toggled it? 
-             // Simplest: always reset window to 48 hours on update if breaking is true
-             // Or better: check if it WAS breaking before? No, simpler is safer:
-             // If update says "Breaking: true", ensure it has an expiry. 
-             // To respect existing expiry, we'd need to fetch first.
-             // Let's simpler: Set 48h from NOW every time you save as breaking.
-             // This treats "Editing" a breaking news as "Refreshing" it.
         body.breakingExpiresAt = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000); 
     } else {
         body.breakingExpiresAt = null;

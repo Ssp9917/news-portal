@@ -22,6 +22,7 @@ export default function AddNews() {
     published: false,
     tags: "",
     gallery: [] as string[],
+    videoUrl: "",
   });
 
   // Load draft from local storage on mount
@@ -368,6 +369,20 @@ export default function AddNews() {
                     গ্যালারি ছবি যোগ করুন
                   </button>
                 </div>
+            </div>
+            
+            {/* Video URL */}
+            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                <h3 className="text-sm font-bold text-gray-900 mb-4 font-anek">ভিডিও লিংক (YouTube)</h3>
+                <input
+                type="text"
+                name="videoUrl"
+                value={formData.videoUrl}
+                onChange={handleChange}
+                placeholder="YouTube ভিডিওর লিংক দিন..."
+                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                />
+                <p className="mt-2 text-xs text-gray-400">যেমন: https://www.youtube.com/watch?v=... অথবা https://youtu.be/...</p>
             </div>
 
             {/* Tags */}
