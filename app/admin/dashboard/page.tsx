@@ -4,19 +4,18 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import Logo from "@/assets/Logo-01.png";
-import { 
-  FileText, 
-  Eye, 
-  Edit3, 
-  Zap, 
-  Search, 
-  Plus, 
-  LogOut, 
+import {
+  FileText,
+  Eye,
+  Edit3,
+  Zap,
+  Search,
+  Plus,
+  LogOut,
   ExternalLink,
   Trash2,
   Edit,
-  Video
+  Video,
 } from "lucide-react";
 
 interface NewsItem {
@@ -35,7 +34,6 @@ export default function AdminDashboard() {
   const router = useRouter();
 
   useEffect(() => {
-    // Basic protection check
     const token = localStorage.getItem("admin_token");
     if (!token) {
       router.push("/admin");
@@ -48,7 +46,7 @@ export default function AdminDashboard() {
   const fetchNews = async () => {
     try {
       const res = await fetch(`/api/news`);
-      
+
       if (!res.ok) {
         throw new Error(`Failed to fetch news: ${res.status} ${res.statusText}`);
       }
@@ -61,7 +59,7 @@ export default function AdminDashboard() {
   };
 
   const deleteNews = async (id: string) => {
-    if (!confirm("আপনি কি নিশ্চিত যে আপনি এই খবরটি মুছে ফেলতে চান?")) return;
+    if (!confirm("Delete this article? This cannot be undone.")) return;
 
     try {
       const res = await fetch(`/api/news/${id}`, {
@@ -70,7 +68,7 @@ export default function AdminDashboard() {
       if (res.ok) {
         setNews(news.filter((item) => item._id !== id));
       } else {
-        alert("খবর মুছতে সমস্যা হয়েছে");
+        alert("Could not delete the article.");
       }
     } catch (error) {
       console.error("Error deleting news:", error);
@@ -79,198 +77,221 @@ export default function AdminDashboard() {
 
   const handleLogout = () => {
     localStorage.removeItem("admin_token");
-    document.cookie = "admin_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
+    document.cookie =
+      "admin_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";
     router.push("/admin");
   };
 
-  // Derived Statistics
   const totalArticles = news.length;
   const publishedArticles = news.length;
   const draftArticles = 0;
-  const breakingArticles = news.filter(n => n.isBreaking).length;
+  const breakingArticles = news.filter((n) => n.isBreaking).length;
 
-  // Filtered News
-  const filteredNews = news.filter(item => 
-    item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.category.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredNews = news.filter(
+    (item) =>
+      item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 font-anek text-gray-900">
-      {/* Top Navbar */}
+    <div className="min-h-screen bg-gray-50 font-sans text-gray-900">
       <nav className="bg-[#111827] text-white shadow-md">
-        <div className="container mx-auto px-4 md:px-6 h-16 flex justify-between items-center">
+        <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
           <div className="flex items-center gap-3">
-             <div className="bg-[#D32F2F] p-1.5 rounded">
-                <FileText className="w-5 h-5 text-white" />
-             </div>
-             <div>
-                 <h1 className="font-bold text-lg leading-tight">Admin</h1>
-                 <p className="text-xs text-gray-400 hidden sm:block">NewsPortal Management</p>
-             </div>
+            <div className="rounded bg-[#D32F2F] p-1.5">
+              <FileText className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-lg font-bold leading-tight">Admin</h1>
+              <p className="hidden text-xs text-gray-400 sm:block">
+                News portal dashboard
+              </p>
+            </div>
           </div>
           <div className="flex items-center gap-4 md:gap-6">
-             <Link href="/" target="_blank" className="text-gray-300 hover:text-white flex items-center gap-2 text-sm transition-colors">
-                <span className="hidden sm:inline">সাইট দেখুন</span>
-                <ExternalLink className="w-4 h-4" />
-             </Link>
-             <button
-                onClick={handleLogout}
-                className="text-gray-300 hover:text-white flex items-center gap-2 text-sm transition-colors"
-                >
-                <LogOut className="w-4 h-4" />
-                <span className="hidden sm:inline">লগআউট</span>
+            <Link
+              href="/bn"
+              target="_blank"
+              className="flex items-center gap-2 text-sm text-gray-300 transition-colors hover:text-white"
+            >
+              <span className="hidden sm:inline">View site</span>
+              <ExternalLink className="h-4 w-4" />
+            </Link>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="flex items-center gap-2 text-sm text-gray-300 transition-colors hover:text-white"
+            >
+              <LogOut className="h-4 w-4" />
+              <span className="hidden sm:inline">Logout</span>
             </button>
           </div>
         </div>
       </nav>
 
-      <main className="container mx-auto px-4 md:px-6 py-6 md:py-8">
-        {/* Statistics Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
-            <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex items-center gap-4">
-                <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center text-gray-600">
-                    <FileText className="w-6 h-6" />
-                </div>
-                <div>
-                     <p className="text-sm text-gray-500 font-medium">মোট সংবাদ</p>
-                     <p className="text-2xl font-bold text-gray-900">{totalArticles}</p>
-                </div>
+      <main className="container mx-auto px-4 py-6 md:px-6 md:py-8">
+        <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 md:mb-8 lg:grid-cols-4 lg:gap-6">
+          <div className="flex items-center gap-4 rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100 text-gray-600">
+              <FileText className="h-6 w-6" />
             </div>
-            <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex items-center gap-4">
-                <div className="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center text-green-600">
-                    <Eye className="w-6 h-6" />
-                </div>
-                <div>
-                     <p className="text-sm text-gray-500 font-medium">প্রকাশিত</p>
-                     <p className="text-2xl font-bold text-gray-900">{publishedArticles}</p>
-                </div>
+            <div>
+              <p className="text-sm font-medium text-gray-500">Total articles</p>
+              <p className="text-2xl font-bold text-gray-900">{totalArticles}</p>
             </div>
-            <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex items-center gap-4">
-                <div className="w-12 h-12 bg-orange-50 rounded-lg flex items-center justify-center text-orange-600">
-                    <Edit3 className="w-6 h-6" />
-                </div>
-                <div>
-                     <p className="text-sm text-gray-500 font-medium">খসড়া</p>
-                     <p className="text-2xl font-bold text-gray-900">{draftArticles}</p>
-                </div>
+          </div>
+          <div className="flex items-center gap-4 rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-green-50 text-green-600">
+              <Eye className="h-6 w-6" />
             </div>
-             <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex items-center gap-4">
-                <div className="w-12 h-12 bg-red-50 rounded-lg flex items-center justify-center text-red-600">
-                    <Zap className="w-6 h-6" />
-                </div>
-                <div>
-                     <p className="text-sm text-gray-500 font-medium">ব্রেকিং</p>
-                     <p className="text-2xl font-bold text-gray-900">{breakingArticles}</p>
-                </div>
+            <div>
+              <p className="text-sm font-medium text-gray-500">Published</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {publishedArticles}
+              </p>
             </div>
+          </div>
+          <div className="flex items-center gap-4 rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-orange-50 text-orange-600">
+              <Edit3 className="h-6 w-6" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-500">Drafts</p>
+              <p className="text-2xl font-bold text-gray-900">{draftArticles}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-4 rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
+            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-red-50 text-red-600">
+              <Zap className="h-6 w-6" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-500">Breaking</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {breakingArticles}
+              </p>
+            </div>
+          </div>
         </div>
 
-        {/* Action Bar */}
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
-            <div className="relative w-full md:w-96">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <input 
-                    type="text" 
-                    placeholder="সংবাদ খুঁজুন..." 
-                    className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#111827] focus:border-transparent bg-white text-sm"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                />
-            </div>
-            <Link
-                href="/admin/add-news"
-                className="bg-[#111827] hover:bg-gray-800 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 text-sm w-full md:w-auto justify-center"
-            >
-                <Plus className="w-4 h-4" />
-                <span>নতুন সংবাদ</span>
-            </Link>
+        <div className="mb-6 flex flex-col items-center justify-between gap-4 md:flex-row">
+          <div className="relative w-full md:w-96">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <input
+              type="search"
+              placeholder="Search articles…"
+              className="w-full rounded-lg border border-gray-200 bg-white py-2 pl-10 pr-4 text-sm focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#111827]"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <Link
+            href="/admin/add-news"
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#111827] px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-800 md:w-auto"
+          >
+            <Plus className="h-4 w-4" />
+            <span>New article</span>
+          </Link>
         </div>
 
-        {/* Data Table */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-                <thead className="bg-gray-50 border-b border-gray-100">
+        <div className="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-left">
+              <thead className="border-b border-gray-100 bg-gray-50">
                 <tr>
-                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">শিরোনাম</th>
-                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">ক্যাটাগরি</th>
-                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">অবস্থা</th>
-                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">তারিখ</th>
-                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">অ্যাকশন</th>
+                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                    Title
+                  </th>
+                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                    Category
+                  </th>
+                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                    Status
+                  </th>
+                  <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                    Date
+                  </th>
+                  <th className="px-6 py-4 text-right text-xs font-semibold uppercase tracking-wider text-gray-500">
+                    Actions
+                  </th>
                 </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
+              </thead>
+              <tbody className="divide-y divide-gray-50">
                 {filteredNews.map((item) => (
-                    <tr key={item._id} className="hover:bg-gray-50 transition-colors group">
+                  <tr key={item._id} className="group transition-colors hover:bg-gray-50">
                     <td className="px-6 py-4">
-                        <div className="flex items-center gap-3 min-w-[280px]">
-                            <div className="w-10 h-10 relative bg-gray-200 rounded overflow-hidden flex-shrink-0">
-                                {item.image && (
-                                    <Image src={item.image} alt={item.title} fill className="object-cover" />
-                                )}
-                            </div>
-                            <span className="font-medium text-gray-900 line-clamp-2" title={item.title}>
-                                {item.title}
-                                {item.videoUrl && (
-                                    <Video className="w-3.5 h-3.5 inline-block ml-2 text-blue-500" />
-                                )}
-                            </span>
+                      <div className="flex min-w-[280px] items-center gap-3">
+                        <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded bg-gray-200">
+                          {item.image && (
+                            <Image
+                              src={item.image}
+                              alt=""
+                              fill
+                              className="object-cover"
+                              unoptimized
+                            />
+                          )}
                         </div>
-                    </td>
-                    <td className="px-6 py-4 text-gray-600 text-sm whitespace-nowrap">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                        {item.category}
+                        <span className="line-clamp-2 font-medium text-gray-900" title={item.title}>
+                          {item.title}
+                          {item.videoUrl && (
+                            <Video className="ml-2 inline-block h-3.5 w-3.5 text-blue-500" />
+                          )}
                         </span>
+                      </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                        {item.isBreaking ? (
-                             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                <Zap className="w-3 h-3" /> Breaking
-                             </span>
-                        ) : (
-                             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                Published
-                             </span>
-                        )}
-                       
+                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-600">
+                      <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-800">
+                        {item.category}
+                      </span>
                     </td>
-                    <td className="px-6 py-4 text-gray-500 text-sm whitespace-nowrap">
-                        {item.date}
+                    <td className="whitespace-nowrap px-6 py-4">
+                      {item.isBreaking ? (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800">
+                          <Zap className="h-3 w-3" /> Breaking
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
+                          Published
+                        </span>
+                      )}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
+                      {item.date}
                     </td>
                     <td className="px-6 py-4 text-right">
-                        <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex justify-end gap-2 opacity-0 transition-opacity group-hover:opacity-100">
                         <Link
-                            href={`/admin/edit-news?id=${item._id}`}
-                            className="p-1.5 hover:bg-gray-100 rounded text-gray-500 hover:text-blue-600 transition-colors"
-                            title="Edit"
+                          href={`/admin/edit-news?id=${item._id}`}
+                          className="rounded p-1.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-blue-600"
+                          title="Edit"
                         >
-                            <Edit className="w-4 h-4" />
+                          <Edit className="h-4 w-4" />
                         </Link>
                         <button
-                            onClick={() => deleteNews(item._id)}
-                            className="p-1.5 hover:bg-gray-100 rounded text-gray-500 hover:text-red-600 transition-colors"
-                             title="Delete"
+                          type="button"
+                          onClick={() => deleteNews(item._id)}
+                          className="rounded p-1.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-red-600"
+                          title="Delete"
                         >
-                            <Trash2 className="w-4 h-4" />
+                          <Trash2 className="h-4 w-4" />
                         </button>
-                        </div>
+                      </div>
                     </td>
-                    </tr>
+                  </tr>
                 ))}
                 {filteredNews.length === 0 && (
-                    <tr>
-                    <td colSpan={5} className="text-center py-12">
-                        <div className="flex flex-col items-center justify-center text-gray-400">
-                             <FileText className="w-12 h-12 mb-3 text-gray-200" />
-                            <p>কোনো সংবাদ পাওয়া যায়নি। আপনার প্রথম সংবাদটি তৈরি করুন!</p>
-                        </div>
+                  <tr>
+                    <td colSpan={5} className="py-12 text-center">
+                      <div className="flex flex-col items-center justify-center text-gray-400">
+                        <FileText className="mb-3 h-12 w-12 text-gray-200" />
+                        <p>No articles yet. Create your first article.</p>
+                      </div>
                     </td>
-                    </tr>
+                  </tr>
                 )}
-                </tbody>
+              </tbody>
             </table>
-            </div>
+          </div>
         </div>
       </main>
     </div>

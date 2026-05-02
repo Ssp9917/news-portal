@@ -1,33 +1,33 @@
-import Link from "next/link";
+"use client";
 
-const categories = [
-  "প্রচ্ছদ",
-  "দেশের খবর",
-  "রাজনীতি",
-  "খেলাধুলা",
-  "প্রযুক্তি",
-  "বিশ্ব",
-  "বাণিজ্য",
-  "বিনোদন",
-  "স্বাস্থ্য",
-  "শিক্ষা",
-  "অপরাধ",
-];
+import Link from "next/link";
+import { NAV_CATEGORY_SLUGS } from "@/lib/i18n/categories";
+import { useI18n } from "@/components/providers/i18n-provider";
+import { withLocale } from "@/lib/i18n/paths";
 
 export default function Navbar() {
+  const { locale, t } = useI18n();
+
   return (
-    <nav className="bg-white border-b border-gray-200 sticky top-0 z-40 font-anek">
-      <div className="container mx-auto px-4 overflow-x-auto">
-        <div className="flex items-center space-x-8 h-12 text-sm font-medium text-gray-600 mb-0.5">
-          {categories.map((category) => (
-            <Link
-              key={category}
-              href={category === "প্রচ্ছদ" ? "/" : `/category/${category}`}
-              className="hover:text-[#D32F2F] whitespace-nowrap transition-colors border-b-2 border-transparent hover:border-[#D32F2F] py-3 uppercase text-xs tracking-wide"
-            >
-              {category}
-            </Link>
-          ))}
+    <nav className="sticky top-0 z-40 border-b border-gray-200 bg-white transition-colors dark:border-neutral-800 dark:bg-neutral-950">
+      <div className="container mx-auto max-w-7xl overflow-x-auto px-4">
+        <div className="mb-0.5 flex h-12 items-center space-x-6 text-xs font-medium tracking-wide text-gray-600 dark:text-neutral-300 md:space-x-8">
+          {NAV_CATEGORY_SLUGS.map((slug) => {
+            const href =
+              slug === "home"
+                ? withLocale(locale, "/")
+                : withLocale(locale, `/category/${slug}`);
+            const label = t(`categories.${slug}`);
+            return (
+              <Link
+                key={slug}
+                href={href}
+                className="whitespace-nowrap border-b-2 border-transparent py-3 uppercase transition-colors hover:border-[#D32F2F] hover:text-[#D32F2F]"
+              >
+                {label}
+              </Link>
+            );
+          })}
         </div>
       </div>
     </nav>

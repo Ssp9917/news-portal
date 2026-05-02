@@ -4,24 +4,29 @@ import { useEffect } from "react";
 import NewsCard from "./NewsCard";
 import { motion } from "framer-motion";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
-import { setInitialNews, fetchMoreNews } from "@/lib/features/newsSlice";
+import { setInitialNews, fetchMoreNews, resetNewsState } from "@/lib/features/newsSlice";
+import type { Locale } from "@/lib/i18n/config";
+import { useI18n } from "@/components/providers/i18n-provider";
 
 interface NewsFeedProps {
-  initialNews: any[];
+  initialNews: Array<Record<string, unknown>>;
+  locale: Locale;
 }
 
-export default function NewsFeed({ initialNews }: NewsFeedProps) {
+export default function NewsFeed({ initialNews, locale }: NewsFeedProps) {
   const dispatch = useAppDispatch();
   const { items: news, page, hasMore, loading } = useAppSelector((state) => state.news);
+  const { t } = useI18n();
 
-  // Initialize Redux state with prop data on mount if empty
   useEffect(() => {
-    // Only set if we have no news in store, or you could force update it
-    // For this example, we'll ensure we at least start with what the server gave us
-    if (news.length === 0 && initialNews.length > 0) {
-      dispatch(setInitialNews(initialNews));
+    dispatch(resetNewsState());
+  }, [locale, dispatch]);
+
+  useEffect(() => {
+    if (initialNews.length > 0) {
+      dispatch(setInitialNews(initialNews as never));
     }
-  }, [initialNews, dispatch, news.length]);
+  }, [initialNews, dispatch]);
 
   const loadMore = () => {
     dispatch(fetchMoreNews(page));
@@ -32,42 +37,45 @@ export default function NewsFeed({ initialNews }: NewsFeedProps) {
     show: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.1
-      }
-    }
+        staggerChildren: 0.1,
+      },
+    },
   };
 
-  // If Redux is empty (initial render before effect), fall back to initialNews temporarily to avoid flash
   const displayNews = news.length > 0 ? news : initialNews;
 
   return (
     <>
-      <motion.div 
+      <motion.div
         variants={container}
         initial="hidden"
         animate="show"
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+        className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4"
       >
         {displayNews.length > 0 ? (
-          displayNews.map((item: any, idx: number) => (
-            <NewsCard key={`${item._id}-${idx}`} {...item} />
+          displayNews.map((item: Record<string, unknown>, idx: number) => (
+            <NewsCard
+              key={`${String(item._id)}-${idx}`}
+              locale={locale}
+              {...(item as never)}
+            />
           ))
         ) : (
-          <p className="text-center text-gray-500 col-span-full py-10">
-            কোনো খবর পাওয়া যায়নি
+          <p className="col-span-full py-10 text-center text-gray-500 dark:text-neutral-400">
+            {t("feed.noNews")}
           </p>
         )}
       </motion.div>
 
-      {/* Show button if we have more, or if we are using initialNews (assuming there might be more) */}
       {hasMore && displayNews.length > 0 && (
         <div className="mt-12 flex justify-center">
           <button
+            type="button"
             onClick={loadMore}
             disabled={loading}
-            className="px-6 py-2 border border-gray-300 rounded hover:bg-gray-50 text-sm font-medium transition-colors disabled:opacity-50"
+            className="rounded border border-gray-300 px-6 py-2 text-sm font-medium transition-colors hover:bg-gray-50 disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:hover:bg-neutral-800"
           >
-            {loading ? "লোড হচ্ছে..." : "আরও দেখুন"}
+            {loading ? t("feed.loading") : t("feed.loadMore")}
           </button>
         </div>
       )}

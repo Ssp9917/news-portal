@@ -1,0 +1,98 @@
+{
+  "site": {
+    "brandTitle": "Daily Latest News",
+    "brandTagline": "Voice of the nation"
+  },
+  "meta": {
+    "defaultTitle": "Daily Latest News — voice of the nation",
+    "defaultDescription": "Latest news across politics, sports, tech, world, business, entertainment, health, education, and more."
+  },
+  "categories": {
+    "home": "Home",
+    "national": "National",
+    "politics": "Politics",
+    "sports": "Sports",
+    "technology": "Technology",
+    "world": "World",
+    "business": "Business",
+    "entertainment": "Entertainment",
+    "health": "Health",
+    "education": "Education",
+    "crime": "Crime"
+  },
+  "nav": {
+    "admin": "Admin",
+    "adminPanel": "Admin panel",
+    "searchPlaceholder": "Search news...",
+    "theme": "Theme",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeSystem": "System",
+    "language": "Language"
+  },
+  "breaking": {
+    "label": "Breaking News"
+  },
+  "feed": {
+    "noNews": "No articles found.",
+    "loadMore": "Load more",
+    "loading": "Loading..."
+  },
+  "hero": {
+    "loading": "Loading stories or none available.",
+    "noSide": "No other stories yet."
+  },
+  "category": {
+    "emptyTitle": "No articles in this section yet.",
+    "emptyHint": "Add articles from the admin panel."
+  },
+  "search": {
+    "resultsFor": "Search results for",
+    "searching": "Searching…",
+    "noResults": "Nothing matched",
+    "tryOther": "Try different keywords.",
+    "pageLoading": "Loading…"
+  },
+  "article": {
+    "back": "Back to news",
+    "views": "views",
+    "share": "Share",
+    "printTooltip": "Print",
+    "print": "Print",
+    "related": "Related news"
+  },
+  "shareButtons": {
+    "copyTooltip": "Copy link",
+    "copied": "Link copied!",
+    "facebook": "Facebook",
+    "twitter": "X/Twitter",
+    "linkedin": "LinkedIn",
+    "email": "Email"
+  },
+  "print": {
+    "backToNews": "BACK TO NEWS",
+    "printedOn": "Printed on:",
+    "publishedOn": "Published on:",
+    "reporter": "Reporter:",
+    "category": "Category:"
+  },
+  "footer": {
+    "tagline": "Your trusted source for headlines. Politics, economics, sport, entertainment — delivered first.",
+    "categoriesTitle": "Categories",
+    "quickLinks": "Quick links",
+    "connect": "Stay connected",
+    "newsletterSubtitle": "Get every headline by email.",
+    "emailPlaceholder": "Your email",
+    "subscribe": "Subscribe",
+    "aboutLink": "About us",
+    "contactLink": "Contact",
+    "privacyLink": "Privacy",
+    "homeLink": "Home",
+    "copyright": "Daily Latest News. All rights reserved."
+  },
+  "common": {
+    "terms": "Terms",
+    "privacyFooter": "Privacy",
+    "cookies": "Cookies"
+  }
+}

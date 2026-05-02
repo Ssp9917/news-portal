@@ -1,24 +1,12 @@
 export default function Loading() {
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-white">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-white transition-colors dark:bg-neutral-950">
       <div className="flex flex-col items-center gap-4">
-        {/* Modern Spinner */}
         <div className="relative flex items-center justify-center">
-            {/* Outer Ring */}
-            <div className="w-16 h-16 border-4 border-[#f3f3f3] border-t-[#D32F2F] rounded-full animate-spin"></div>
-            {/* Inner Dot (Optional for aesthetics) */}
-            <div className="absolute w-3 h-3 bg-[#D32F2F] rounded-full animate-ping"></div>
+          <div className="h-16 w-16 animate-spin rounded-full border-4 border-[#f3f3f3] border-t-[#D32F2F] dark:border-neutral-700 dark:border-t-red-500" />
+          <div className="absolute h-3 w-3 animate-ping rounded-full bg-[#D32F2F]" />
         </div>
-        
-        {/* Text */}
-        <div className="flex flex-col items-center gap-1">
-            <h2 className="text-xl font-bold font-anek text-gray-800 tracking-wide">
-                দৈনিক সর্বশেষ সংবাদ
-            </h2>
-            <p className="text-sm text-gray-400 font-anek animate-pulse">
-                লোড হচ্ছে...
-            </p>
-        </div>
+        <p className="animate-pulse text-sm text-gray-500 dark:text-neutral-400">Loading…</p>
       </div>
     </div>
   );

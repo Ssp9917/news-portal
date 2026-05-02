@@ -1,0 +1,98 @@
+{
+  "site": {
+    "brandTitle": "डेली लेटेस्ट न्यूज़",
+    "brandTagline": "राष्ट्र की आवाज़"
+  },
+  "meta": {
+    "defaultTitle": "डेली लेटेस्ट न्यूज़ — राष्ट्र की आवाज़",
+    "defaultDescription": "राजनीति, खेल, तकनीक, दुनिया, व्यापार, मनोरंजन, स्वास्थ्य, शिक्षा और अन्य से ताज़ा ख़बरें।"
+  },
+  "categories": {
+    "home": "मुखपृष्ठ",
+    "national": "देश",
+    "politics": "राजनीति",
+    "sports": "खेल",
+    "technology": "प्रौद्योगिकी",
+    "world": "विश्व",
+    "business": "व्यापार",
+    "entertainment": "मनोरंजन",
+    "health": "स्वास्थ्य",
+    "education": "शिक्षा",
+    "crime": "अपराध"
+  },
+  "nav": {
+    "admin": "एडमिन",
+    "adminPanel": "एडमिन पैनल",
+    "searchPlaceholder": "समाचार खोजें…",
+    "theme": "थीम",
+    "themeLight": "लाइट",
+    "themeDark": "डार्क",
+    "themeSystem": "सिस्टम",
+    "language": "भाषा"
+  },
+  "breaking": {
+    "label": "ब्रेकिंग न्यूज़"
+  },
+  "feed": {
+    "noNews": "कोई खबर नहीं मिली।",
+    "loadMore": "और देखें",
+    "loading": "लोड हो रहा है…"
+  },
+  "hero": {
+    "loading": "समाचार लोड हो रहे हैं या उपलब्ध नहीं हैं।",
+    "noSide": "अन्य समाचार अभी नहीं हैं।"
+  },
+  "category": {
+    "emptyTitle": "इस श्रेणी में अभी कोई खबर नहीं है।",
+    "emptyHint": "एडमिन पैनल से खबर जोड़ें।"
+  },
+  "search": {
+    "resultsFor": "खोज परिणाम",
+    "searching": "खोज जारी है…",
+    "noResults": "कुछ नहीं मिला",
+    "tryOther": "अलग शब्दों से फिर कोशिश करें।",
+    "pageLoading": "लोड हो रहा है…"
+  },
+  "article": {
+    "back": "समाचार पर वापस",
+    "views": "बार देखा गया",
+    "share": "शेयर",
+    "printTooltip": "प्रिंट",
+    "print": "प्रिंट",
+    "related": "संबंधित खबरें"
+  },
+  "shareButtons": {
+    "copyTooltip": "लिंक कॉपी करें",
+    "copied": "लिंक कॉपी हो गया!",
+    "facebook": "Facebook",
+    "twitter": "X/Twitter",
+    "linkedin": "LinkedIn",
+    "email": "ईमेल"
+  },
+  "print": {
+    "backToNews": "समाचार पर वापस",
+    "printedOn": "प्रिंट दिनांक:",
+    "publishedOn": "प्रकाशित दिनांक:",
+    "reporter": "रिपोर्टर:",
+    "category": "श्रेणी:"
+  },
+  "footer": {
+    "tagline": "आपका भरोसेमंद समाचार स्रोत। राजनीति, अर्थव्यवस्था, खेल और मनोरंजन — सबसे पहले।",
+    "categoriesTitle": "श्रेणियाँ",
+    "quickLinks": "त्वरित लिंक",
+    "connect": "जुड़े रहें",
+    "newsletterSubtitle": "दैनिक सारी ख़बरें ईमेल पर पाएं।",
+    "emailPlaceholder": "आपका ईमेल",
+    "subscribe": "सदस्यता",
+    "aboutLink": "हमारे बारे में",
+    "contactLink": "संपर्क",
+    "privacyLink": "गोपनीयता",
+    "homeLink": "मुखपृष्ठ",
+    "copyright": "डेली लेटेस्ट न्यूज़। सर्वाधिकार सुरक्षित।"
+  },
+  "common": {
+    "terms": "नियम",
+    "privacyFooter": "गोपनीयता",
+    "cookies": "कुकीज़"
+  }
+}

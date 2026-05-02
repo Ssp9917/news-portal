@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Eye, Save, Send } from "lucide-react";
+import { ArrowLeft, Eye, Save } from "lucide-react";
+import { ADMIN_NEWS_CATEGORIES } from "@/lib/admin-categories";
 
 const DRAFT_KEY = "news-draft";
 
@@ -12,10 +13,16 @@ export default function AddNews() {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
+    titleI18nEn: "",
+    titleI18nHi: "",
     slug: "",
     excerpt: "",
+    excerptI18nEn: "",
+    excerptI18nHi: "",
     content: "",
-    category: "বিশ্ব", // Default to World (mapped to Bengali)
+    contentI18nEn: "",
+    contentI18nHi: "",
+    category: "বিশ্ব",
     author: "Admin",
     image: "",
     isBreaking: false,
@@ -25,7 +32,6 @@ export default function AddNews() {
     videoUrl: "",
   });
 
-  // Load draft from local storage on mount
   useEffect(() => {
     const savedDraft = localStorage.getItem(DRAFT_KEY);
     if (savedDraft) {
@@ -38,46 +44,32 @@ export default function AddNews() {
     }
   }, []);
 
-  // Save to local storage whenever formData changes
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-        localStorage.setItem(DRAFT_KEY, JSON.stringify(formData));
-    }, 500); // 500ms debounce to avoid excessive writes
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(formData));
+    }, 500);
     return () => clearTimeout(timeoutId);
   }, [formData]);
 
-  const categories = [
-    { label: "Cover (প্রচ্ছদ)", value: "প্রচ্ছদ", color: "bg-gray-500" },
-    { label: "Country (দেশের খবর)", value: "দেশের খবর", color: "bg-teal-500" },
-    { label: "Politics (রাজনীতি)", value: "রাজনীতি", color: "bg-red-500" },
-    { label: "Sports (খেলাধুলা)", value: "খেলাধুলা", color: "bg-green-500" },
-    { label: "Technology (প্রযুক্তি)", value: "প্রযুক্তি", color: "bg-blue-500" },
-    { label: "Business (বাণিজ্য)", value: "বাণিজ্য", color: "bg-orange-500" },
-    { label: "Entertainment (বিনোদন)", value: "বিনোদন", color: "bg-pink-500" },
-    { label: "Health (স্বাস্থ্য)", value: "স্বাস্থ্য", color: "bg-rose-400" },
-    { label: "Education (শিক্ষা)", value: "শিক্ষা", color: "bg-yellow-500" },
-    { label: "Crime (অপরাধ)", value: "অপরাধ", color: "bg-slate-700" },
-    { label: "Social (সামাজিক)", value: "সামাজিক", color: "bg-indigo-500" },
-    { label: "World (বিশ্ব)", value: "বিশ্ব", color: "bg-purple-500" },
-  ];
-
-  const slugify = (text: string) => {
-    return text
+  const slugify = (text: string) =>
+    text
       .toLowerCase()
       .trim()
       .replace(/[^\w\s-]/g, "")
       .replace(/[\s_-]+/g, "-")
       .replace(/^-+|-+$/g, "");
-  };
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     const { name, value, type } = e.target;
     setFormData((prev) => {
       const newData = {
         ...prev,
-        [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
+        [name]:
+          type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
       };
 
       if (name === "title" && !prev.slug) {
@@ -115,27 +107,53 @@ export default function AddNews() {
     e.preventDefault();
     setLoading(true);
 
-    const date = new Date().toLocaleDateString("bn-BD", {
+    const date = new Date().toLocaleDateString("en-US", {
       day: "numeric",
       month: "long",
       year: "numeric",
     });
 
-    const selectedCat = categories.find((c) => c.value === formData.category);
-    const categoryColor = selectedCat ? selectedCat.color : "bg-gray-500";
+    const selectedCat = ADMIN_NEWS_CATEGORIES.find(
+      (c) => c.value === formData.category
+    );
+    const categoryColor = selectedCat?.color ?? "bg-gray-500";
 
     try {
       const res = await fetch(`/api/news`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json", 
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          ...formData,
+          title: formData.title,
+          titleI18n: {
+            en: formData.titleI18nEn,
+            hi: formData.titleI18nHi,
+          },
+          slug: formData.slug,
+          excerpt: formData.excerpt,
+          excerptI18n: {
+            en: formData.excerptI18nEn,
+            hi: formData.excerptI18nHi,
+          },
+          content: formData.content,
+          contentI18n: {
+            en: formData.contentI18nEn,
+            hi: formData.contentI18nHi,
+          },
+          category: formData.category,
+          author: formData.author,
+          image: formData.image,
+          isBreaking: formData.isBreaking,
+          published: formData.published,
+          videoUrl: formData.videoUrl,
           date,
           categoryColor,
-          tags: formData.tags.split(",").map((t) => t.trim()).filter((t) => t),
-          gallery: formData.gallery.filter(url => url.trim() !== ""),
+          tags: formData.tags
+            .split(",")
+            .map((t) => t.trim())
+            .filter((t) => t),
+          gallery: formData.gallery.filter((url) => url.trim() !== ""),
         }),
       });
 
@@ -144,273 +162,373 @@ export default function AddNews() {
         router.push("/admin/dashboard");
       } else {
         const data = await res.json();
-        alert(data.error || "Failed to add news");
+        alert(data.error || "Failed to add article");
       }
     } catch (error) {
       console.error("Error adding news:", error);
-      alert("Error adding news");
+      alert("Failed to add article");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 font-anek text-gray-900 pb-20">
-      {/* Top Bar */}
-      <nav className="bg-white sticky top-0 z-10 border-b border-gray-200 px-4 md:px-6 py-3 md:py-4 flex items-center justify-between shadow-sm">
+    <div className="min-h-screen bg-gray-50 pb-20 font-sans text-gray-900">
+      <nav className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3 shadow-sm md:px-6 md:py-4">
         <div className="flex items-center gap-2 md:gap-4">
           <Link
             href="/admin/dashboard"
-            className="text-gray-500 hover:text-gray-900 flex items-center gap-1 text-sm font-medium transition-colors"
+            className="flex items-center gap-1 text-sm font-medium text-gray-500 transition-colors hover:text-gray-900"
           >
-            <ArrowLeft className="w-4 h-4" />
-            <span className="hidden sm:inline">ফিরে যান</span>
+            <ArrowLeft className="h-4 w-4" />
+            <span className="hidden sm:inline">Back</span>
           </Link>
-          <div className="h-6 w-px bg-gray-300 mx-1 md:mx-2"></div>
-          <h1 className="text-lg md:text-xl font-anek font-bold text-gray-900">নতুন সংবাদ</h1>
+          <div className="mx-1 h-6 w-px bg-gray-300 md:mx-2" />
+          <h1 className="text-lg font-bold text-gray-900 md:text-xl">
+            New article
+          </h1>
         </div>
         <div className="flex items-center gap-2 md:gap-3">
-            {/* Preview Button - Placeholder logic */}
-          <button type="button" className="hidden sm:flex items-center gap-2 px-3 md:px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-xs md:text-sm font-medium transition-colors">
-            <Eye className="w-4 h-4" />
-            <span className="hidden md:inline">প্রিভিউ</span>
-          </button>
-           {/* Submit Button triggers form */}
           <button
+            type="button"
+            className="hidden items-center gap-2 rounded-lg border border-gray-300 px-3 py-2 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50 sm:flex md:px-4 md:text-sm"
+          >
+            <Eye className="h-4 w-4" />
+            <span className="hidden md:inline">Preview</span>
+          </button>
+          <button
+            type="button"
             onClick={handleSubmit}
             disabled={loading}
-            className="flex items-center gap-2 px-4 md:px-6 py-2 bg-[#0F172A] text-white rounded-lg hover:bg-black text-xs md:text-sm font-medium transition-colors disabled:opacity-50 shadow-sm"
+            className="flex items-center gap-2 rounded-lg bg-[#0F172A] px-4 py-2 text-xs font-medium text-white shadow-sm transition-colors hover:bg-black disabled:opacity-50 md:px-6 md:text-sm"
           >
             {loading ? (
-                <>সংরক্ষণ হচ্ছে...</>
+              <>Saving…</>
             ) : (
-                <>
-                    <Save className="w-4 h-4" />
-                    <span>প্রকাশ করুন</span>
-                </>
+              <>
+                <Save className="h-4 w-4" />
+                <span>Publish</span>
+              </>
             )}
-            
           </button>
         </div>
       </nav>
 
-      <div className="max-w-[1600px] w-full mx-auto px-4 md:px-6 py-4 md:py-8 overflow-x-hidden">
+      <div className="mx-auto w-full max-w-[1600px] overflow-x-hidden px-4 py-4 md:px-6 md:py-8">
         <form onSubmit={handleSubmit} className="grid grid-cols-12 gap-4 lg:gap-8">
-          {/* Left Column (Main Content) */}
-          <div className="col-span-12 lg:col-span-8 space-y-6">
-            
-            {/* Title */}
-            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">শিরোনাম *</label>
-                <input
+          <div className="col-span-12 space-y-6 lg:col-span-8">
+            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+              <label className="mb-2 block text-sm font-semibold text-gray-700">
+                Title *
+              </label>
+              <input
                 type="text"
                 name="title"
                 value={formData.title}
                 onChange={handleChange}
-                placeholder="সংবাদের শিরোনাম লিখুন..."
-                className="w-full text-lg px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all placeholder:text-gray-400"
+                placeholder="Article headline"
+                className="w-full rounded-lg border border-gray-200 px-4 py-3 text-lg outline-none transition-all placeholder:text-gray-400 focus:border-transparent focus:ring-2 focus:ring-blue-500"
                 required
-                />
-            </div>
-
-            {/* Slug */}
-             <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">URL স্লাগ</label>
-                <div className="flex items-center">
-                    <span className="px-4 py-3 bg-gray-50 border border-r-0 border-gray-200 text-gray-500 text-sm rounded-l-lg select-none">
-                        /news/
-                    </span>
-                    <input
+              />
+              <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-gray-600">
+                    Title (English)
+                  </label>
+                  <input
                     type="text"
-                    name="slug"
-                    value={formData.slug}
-                    onChange={handleSlugChange}
-                    placeholder="article-url-slug"
-                    className="flex-1 w-full px-4 py-3 border border-gray-200 rounded-r-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-sm text-gray-600"
-                    />
+                    name="titleI18nEn"
+                    value={formData.titleI18nEn}
+                    onChange={handleChange}
+                    placeholder="English title (optional)"
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-blue-500"
+                  />
                 </div>
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-gray-600">
+                    Title (Hindi)
+                  </label>
+                  <input
+                    type="text"
+                    name="titleI18nHi"
+                    value={formData.titleI18nHi}
+                    onChange={handleChange}
+                    placeholder="Hindi title (optional)"
+                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
             </div>
 
-            {/* Short Description */}
-            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">সংক্ষিপ্ত বিবরণ *</label>
-                <textarea
+            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+              <label className="mb-2 block text-sm font-semibold text-gray-700">
+                URL slug
+              </label>
+              <div className="flex items-center">
+                <span className="select-none whitespace-nowrap rounded-l-lg border border-r-0 border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-500">
+                  /bn/news/
+                </span>
+                <input
+                  type="text"
+                  name="slug"
+                  value={formData.slug}
+                  onChange={handleSlugChange}
+                  placeholder="article-url-slug"
+                  className="w-full flex-1 rounded-r-lg border border-gray-200 px-4 py-3 text-sm text-gray-600 outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+              <label className="mb-2 block text-sm font-semibold text-gray-700">
+                Excerpt / summary *
+              </label>
+              <textarea
                 name="excerpt"
                 value={formData.excerpt}
                 onChange={handleChange}
                 rows={3}
-                placeholder="সংবাদের সংক্ষিপ্ত সারাংশ..."
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-y text-sm"
+                placeholder="Short summary for listings and SEO"
+                className="w-full resize-y rounded-lg border border-gray-200 px-4 py-3 text-sm outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-blue-500"
                 required
-                />
+              />
+              <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-gray-600">
+                    Excerpt (English)
+                  </label>
+                  <textarea
+                    name="excerptI18nEn"
+                    value={formData.excerptI18nEn}
+                    onChange={handleChange}
+                    rows={3}
+                    placeholder="English excerpt (optional)"
+                    className="w-full resize-y rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-gray-600">
+                    Excerpt (Hindi)
+                  </label>
+                  <textarea
+                    name="excerptI18nHi"
+                    value={formData.excerptI18nHi}
+                    onChange={handleChange}
+                    rows={3}
+                    placeholder="Hindi excerpt (optional)"
+                    className="w-full resize-y rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
             </div>
 
-            {/* Full Content */}
-            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">বিস্তারিত বিবরণ *</label>
-                <textarea
+            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+              <label className="mb-2 block text-sm font-semibold text-gray-700">
+                Full article *
+              </label>
+              <textarea
                 name="content"
                 value={formData.content}
                 onChange={handleChange}
                 rows={15}
-                placeholder="আপনার সংবাদের বিস্তারিত এখানে লিখুন... (HTML সমর্থিত)"
-                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-y font-anek text-sm leading-relaxed"
+                placeholder="Full HTML content (supports p, headings, lists, embeds…)"
+                className="w-full resize-y rounded-lg border border-gray-200 px-4 py-3 font-mono text-sm leading-relaxed outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-blue-500"
                 required
-                />
-                <p className="mt-2 text-xs text-gray-400">
-                    আপনি ফরম্যাটিং এর জন্য HTML ট্যাগ ব্যবহার করতে পারেন (p, h3, ul, li, strong, em, ইত্যাদি)
-                </p>
+              />
+              <div className="mt-4 grid grid-cols-1 gap-3">
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-gray-600">
+                    Full article (English HTML)
+                  </label>
+                  <textarea
+                    name="contentI18nEn"
+                    value={formData.contentI18nEn}
+                    onChange={handleChange}
+                    rows={10}
+                    placeholder="English HTML content (optional)"
+                    className="w-full resize-y rounded-lg border border-gray-200 px-3 py-2 font-mono text-sm leading-relaxed outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-gray-600">
+                    Full article (Hindi HTML)
+                  </label>
+                  <textarea
+                    name="contentI18nHi"
+                    value={formData.contentI18nHi}
+                    onChange={handleChange}
+                    rows={10}
+                    placeholder="Hindi HTML content (optional)"
+                    className="w-full resize-y rounded-lg border border-gray-200 px-3 py-2 font-mono text-sm leading-relaxed outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+              <p className="mt-2 text-xs text-gray-400">
+                You can use HTML tags for formatting (e.g. p, h3, ul, li, strong,
+                em).
+              </p>
             </div>
-
           </div>
 
-          {/* Right Column (Sidebar) */}
-          <div className="col-span-12 lg:col-span-4 space-y-6">
-            
-            {/* Publish Settings */}
-            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                <h3 className="text-sm font-bold text-gray-900 mb-4 font-anek">প্রকাশনা সেটিংস</h3>
-                
-                <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                        <label className="text-sm text-gray-600">প্রকাশিত</label>
-                        <label className="relative inline-flex items-center cursor-pointer">
-                            <input
-                                type="checkbox"
-                                name="published"
-                                checked={formData.published}
-                                onChange={handleChange}
-                                className="sr-only peer"
-                            />
-                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                        </label>
-                    </div>
+          <div className="col-span-12 space-y-6 lg:col-span-4">
+            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+              <h3 className="mb-4 text-sm font-bold text-gray-900">Publishing</h3>
 
-                    <div className="flex items-center justify-between">
-                        <label className="text-sm text-gray-600">ব্রেকিং নিউজ</label>
-                        <label className="relative inline-flex items-center cursor-pointer">
-                            <input
-                                type="checkbox"
-                                name="isBreaking"
-                                checked={formData.isBreaking}
-                                onChange={handleChange}
-                                className="sr-only peer"
-                            />
-                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
-                        </label>
-                    </div>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm text-gray-600">Published</label>
+                  <label className="relative inline-flex cursor-pointer items-center">
+                    <input
+                      type="checkbox"
+                      name="published"
+                      checked={formData.published}
+                      onChange={handleChange}
+                      className="peer sr-only"
+                    />
+                    <div className="relative h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-blue-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300" />
+                  </label>
                 </div>
+
+                <div className="flex items-center justify-between">
+                  <label className="text-sm text-gray-600">Breaking news</label>
+                  <label className="relative inline-flex cursor-pointer items-center">
+                    <input
+                      type="checkbox"
+                      name="isBreaking"
+                      checked={formData.isBreaking}
+                      onChange={handleChange}
+                      className="peer sr-only"
+                    />
+                    <div className="relative h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-red-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-red-300" />
+                  </label>
+                </div>
+              </div>
             </div>
 
-            {/* Category */}
-            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                <h3 className="text-sm font-bold text-gray-900 mb-4 font-anek">ক্যাটাগরি</h3>
-                <div className="relative">
-                    <select
-                    name="category"
-                    value={formData.category}
-                    onChange={handleChange}
-                    className="w-full appearance-none px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white text-sm text-gray-600 cursor-pointer"
-                    >
-                    {categories.map((cat) => (
-                        <option key={cat.value} value={cat.value}>
-                        {cat.label}
-                        </option>
-                    ))}
-                    </select>
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                         <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                    </div>
+            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+              <h3 className="mb-4 text-sm font-bold text-gray-900">Category</h3>
+              <div className="relative">
+                <select
+                  name="category"
+                  value={formData.category}
+                  onChange={handleChange}
+                  className="w-full cursor-pointer appearance-none rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm text-gray-600 outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  {ADMIN_NEWS_CATEGORIES.map((cat) => (
+                    <option key={cat.value} value={cat.value}>
+                      {cat.label}
+                    </option>
+                  ))}
+                </select>
+                <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">
+                  <svg
+                    className="h-4 w-4 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
                 </div>
+              </div>
             </div>
 
-            {/* Featured Image */}
-            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                <h3 className="text-sm font-bold text-gray-900 mb-4 font-anek">প্রধান ছবি</h3>
-                <input
+            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+              <h3 className="mb-4 text-sm font-bold text-gray-900">Featured image</h3>
+              <input
                 type="text"
                 name="image"
                 value={formData.image}
                 onChange={handleChange}
-                placeholder="ছবির URL দিন..."
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm"
-                />
+                placeholder="Image URL"
+                className="w-full rounded-lg border border-gray-200 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+              />
             </div>
 
-            {/* Gallery Images */}
-             <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                <h3 className="text-sm font-bold text-gray-900 mb-4 font-anek">ছবি গ্যালারি</h3>
-                <div className="space-y-3">
-                  {formData.gallery.map((url, index) => (
-                    <div key={index} className="flex gap-2">
-                      <input
-                        type="text"
-                        value={url}
-                        onChange={(e) => handleGalleryChange(index, e.target.value)}
-                        placeholder={`Image URL ${index + 1}`}
-                        className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm"
-                      />
-                       <button
-                        type="button"
-                        onClick={() => removeGalleryField(index)}
-                        className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                        title="Remove Image"
-                      >
-                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                      </button>
-                    </div>
-                  ))}
-                  <button
-                    type="button"
-                    onClick={addGalleryField}
-                    className="w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-blue-500 hover:text-blue-500 transition-colors text-sm font-medium flex items-center justify-center gap-2"
-                  >
-                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path></svg>
-                    গ্যালারি ছবি যোগ করুন
-                  </button>
-                </div>
+            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+              <h3 className="mb-4 text-sm font-bold text-gray-900">Image gallery</h3>
+              <div className="space-y-3">
+                {formData.gallery.map((url, index) => (
+                  <div key={index} className="flex gap-2">
+                    <input
+                      type="text"
+                      value={url}
+                      onChange={(e) => handleGalleryChange(index, e.target.value)}
+                      placeholder={`Image URL ${index + 1}`}
+                      className="flex-1 rounded-lg border border-gray-200 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeGalleryField(index)}
+                      className="rounded-lg p-2 text-red-500 transition-colors hover:bg-red-50"
+                      title="Remove"
+                    >
+                      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={addGalleryField}
+                  className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-300 py-2 text-sm font-medium text-gray-500 transition-colors hover:border-blue-500 hover:text-blue-500"
+                >
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  Add gallery image URL
+                </button>
+              </div>
             </div>
-            
-            {/* Video URL */}
-            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                <h3 className="text-sm font-bold text-gray-900 mb-4 font-anek">ভিডিও লিংক (YouTube)</h3>
-                <input
+
+            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+              <h3 className="mb-4 text-sm font-bold text-gray-900">
+                Video (YouTube URL)
+              </h3>
+              <input
                 type="text"
                 name="videoUrl"
                 value={formData.videoUrl}
                 onChange={handleChange}
-                placeholder="YouTube ভিডিওর লিংক দিন..."
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm"
-                />
-                <p className="mt-2 text-xs text-gray-400">যেমন: https://www.youtube.com/watch?v=... অথবা https://youtu.be/...</p>
+                placeholder="https://www.youtube.com/watch?v=… or youtu.be/…"
+                className="w-full rounded-lg border border-gray-200 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+              />
             </div>
 
-            {/* Tags */}
-            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                 <h3 className="text-sm font-bold text-gray-900 mb-4 font-anek">ট্যাগ</h3>
-                <input
+            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+              <h3 className="mb-4 text-sm font-bold text-gray-900">Tags</h3>
+              <input
                 type="text"
                 name="tags"
                 value={formData.tags}
                 onChange={handleChange}
-                placeholder="tag1, tag2, tag3..."
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm"
-                />
-                <p className="mt-2 text-xs text-gray-400">কমা দিয়ে ট্যাগগুলো আলাদা করুন</p>
+                placeholder="tag1, tag2, tag3"
+                className="w-full rounded-lg border border-gray-200 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <p className="mt-2 text-xs text-gray-400">Separate tags with commas.</p>
             </div>
 
-            {/* Author */}
-             <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                 <h3 className="text-sm font-bold text-gray-900 mb-4 font-anek">লেখক</h3>
-                <input
+            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+              <h3 className="mb-4 text-sm font-bold text-gray-900">Author</h3>
+              <input
                 type="text"
                 name="author"
                 value={formData.author}
                 onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm"
-                />
+                className="w-full rounded-lg border border-gray-200 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+              />
             </div>
-
           </div>
         </form>
       </div>
