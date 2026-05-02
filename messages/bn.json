@@ -1,0 +1,98 @@
+{
+  "site": {
+    "brandTitle": "দৈনিক সর্বশেষ সংবাদ",
+    "brandTagline": "দেশ ও জনগণের কথা বলে"
+  },
+  "meta": {
+    "defaultTitle": "দৈনিক সর্বশেষ সংবাদ — দেশ ও জনগণের কথা বলে",
+    "defaultDescription": "রাজনীতি, খেলাধুলা, প্রযুক্তি, বিশ্ব, বাণিজ্য, বিনোদন, স্বাস্থ্য, শিক্ষা ও আরও বিভাগের সর্বশেষ খবর।"
+  },
+  "categories": {
+    "home": "প্রচ্ছদ",
+    "national": "দেশের খবর",
+    "politics": "রাজনীতি",
+    "sports": "খেলাধুলা",
+    "technology": "প্রযুক্তি",
+    "world": "বিশ্ব",
+    "business": "বাণিজ্য",
+    "entertainment": "বিনোদন",
+    "health": "স্বাস্থ্য",
+    "education": "শিক্ষা",
+    "crime": "অপরাধ"
+  },
+  "nav": {
+    "admin": "অ্যাডমিন",
+    "adminPanel": "অ্যাডমিন প্যানেল",
+    "searchPlaceholder": "খবর খুঁজুন…",
+    "theme": "থিম",
+    "themeLight": "উজ্জ্বল",
+    "themeDark": "গাঢ়",
+    "themeSystem": "সিস্টেম",
+    "language": "ভাষা"
+  },
+  "breaking": {
+    "label": "ব্রেকিং নিউজ"
+  },
+  "feed": {
+    "noNews": "কোনো খবর পাওয়া যায়নি",
+    "loadMore": "আরও দেখুন",
+    "loading": "লোড হচ্ছে…"
+  },
+  "hero": {
+    "loading": "খবর লোড হচ্ছে অথবা কোনো খবর নেই…",
+    "noSide": "আরও কোনো খবর নেই"
+  },
+  "category": {
+    "emptyTitle": "এই বিভাগে এখনো কোনো খবর নেই",
+    "emptyHint": "অ্যাডমিন প্যানেল থেকে খবর যোগ করুন।"
+  },
+  "search": {
+    "resultsFor": "অনুসন্ধানের ফলাফল",
+    "searching": "খুঁজছে…",
+    "noResults": "কোনো ফলাফল পাওয়া যায়নি",
+    "tryOther": "অন্য কোনো কীওয়ার্ড দিয়ে চেষ্টা করুন।",
+    "pageLoading": "লোড হচ্ছে…"
+  },
+  "article": {
+    "back": "খবরে ফিরে যান",
+    "views": "বার দেখা হয়েছে",
+    "share": "শেয়ার",
+    "printTooltip": "প্রিন্ট করুন",
+    "print": "প্রিন্ট",
+    "related": "সম্পর্কিত খবর"
+  },
+  "shareButtons": {
+    "copyTooltip": "লিঙ্ক কপি করুন",
+    "copied": "লিঙ্ক কপি হয়েছে!",
+    "facebook": "ফেসবুক",
+    "twitter": "টুইটার/এক্স",
+    "linkedin": "লিঙ্কডইন",
+    "email": "ইমেইল"
+  },
+  "print": {
+    "backToNews": "খবরে ফিরে যান",
+    "printedOn": "প্রিন্টের তারিখ:",
+    "publishedOn": "প্রকাশের তারিখ:",
+    "reporter": "রিপোর্টার:",
+    "category": "ক্যাটাগরি:"
+  },
+  "footer": {
+    "tagline": "আপনার বিশ্বস্ত খবরের সঙ্গী। আমরা পৌঁছে দিই রাজনীতি, অর্থনীতি, খেলাধুলা এবং বিনোদনের তাজা খবর, সবার আগে।",
+    "categoriesTitle": "ক্যাটাগরি",
+    "quickLinks": "দ্রুত লিঙ্ক",
+    "connect": "যুক্ত থাকুন",
+    "newsletterSubtitle": "প্রতিদিন সব খবর পেতে আপনার ইমেইল দিন",
+    "emailPlaceholder": "আপনার ইমেইল লিখুন",
+    "subscribe": "সাবস্ক্রাইব",
+    "aboutLink": "আমাদের সম্পর্কে",
+    "contactLink": "যোগাযোগ",
+    "privacyLink": "গোপনীয়তা নীতি",
+    "homeLink": "প্রচ্ছদ",
+    "copyright": "দৈনিক সর্বশেষ সংবাদ। সর্বস্বত্ব সংরক্ষিত।"
+  },
+  "common": {
+    "terms": "শর্তাবলী",
+    "privacyFooter": "গোপনীয়তা",
+    "cookies": "কুকিজ"
+  }
+}

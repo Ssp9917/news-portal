@@ -1,14 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { 
-  Facebook, 
-  Twitter, 
-  Linkedin, 
-  Mail, 
-  Link as LinkIcon, 
-  Check
+import {
+  Facebook,
+  Twitter,
+  Linkedin,
+  Mail,
+  Link as LinkIcon,
+  Check,
 } from "lucide-react";
+import { useI18n } from "@/components/providers/i18n-provider";
 
 interface ShareButtonsProps {
   title: string;
@@ -17,25 +18,25 @@ interface ShareButtonsProps {
 
 export default function ShareButtons({ title, size = "sm" }: ShareButtonsProps) {
   const [copied, setCopied] = useState(false);
+  const { t } = useI18n();
 
   const handleCopy = () => {
     if (typeof window !== "undefined" && navigator?.clipboard) {
-      navigator.clipboard.writeText(window.location.href)
+      navigator.clipboard
+        .writeText(window.location.href)
         .then(() => {
-             setCopied(true);
-             setTimeout(() => setCopied(false), 2000);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
         })
-        .catch(err => {
-            console.error('Failed to copy text: ', err);
-             // Fallback or alert if needed
+        .catch((err) => {
+          console.error("Failed to copy text: ", err);
         });
     }
   };
 
   const handleShare = (platform: string) => {
     if (typeof window === "undefined") return;
-    
-    // Construct absolute URL (window.location.href works best on client)
+
     const url = encodeURIComponent(window.location.href);
     const text = encodeURIComponent(title);
     let shareUrl = "";
@@ -60,61 +61,63 @@ export default function ShareButtons({ title, size = "sm" }: ShareButtonsProps) 
     }
   };
 
-  const btnClass = size === "lg" 
-    ? "w-10 h-10" 
-    : "w-8 h-8";
-  
-  const iconClass = size === "lg"
-    ? "w-5 h-5"
-    : "w-4 h-4";
+  const btnClass = size === "lg" ? "w-10 h-10" : "w-8 h-8";
+
+  const iconClass = size === "lg" ? "w-5 h-5" : "w-4 h-4";
 
   return (
     <div className="flex gap-2">
-      <button 
+      <button
+        type="button"
         onClick={() => handleShare("facebook")}
-        title="Share on Facebook"
-        className={`${btnClass} flex items-center justify-center rounded-full bg-gray-100 hover:bg-[#1877F2] hover:text-white transition-all text-gray-600`}
+        title={t("shareButtons.facebook")}
+        className={`${btnClass} flex items-center justify-center rounded-full bg-gray-100 text-gray-600 transition-all hover:bg-[#1877F2] hover:text-white dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-[#1877F2]`}
       >
         <Facebook className={iconClass} />
       </button>
-      
-      <button 
+
+      <button
+        type="button"
         onClick={() => handleShare("twitter")}
-        title="Share on Twitter"
-        className={`${btnClass} flex items-center justify-center rounded-full bg-gray-100 hover:bg-[#1DA1F2] hover:text-white transition-all text-gray-600`}
+        title={t("shareButtons.twitter")}
+        className={`${btnClass} flex items-center justify-center rounded-full bg-gray-100 text-gray-600 transition-all hover:bg-[#1DA1F2] hover:text-white dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-[#1DA1F2]`}
       >
         <Twitter className={iconClass} />
       </button>
-      
-      <button 
+
+      <button
+        type="button"
         onClick={() => handleShare("linkedin")}
-        title="Share on LinkedIn"
-        className={`${btnClass} flex items-center justify-center rounded-full bg-gray-100 hover:bg-[#0A66C2] hover:text-white transition-all text-gray-600`}
+        title={t("shareButtons.linkedin")}
+        className={`${btnClass} flex items-center justify-center rounded-full bg-gray-100 text-gray-600 transition-all hover:bg-[#0A66C2] hover:text-white dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-[#0A66C2]`}
       >
         <Linkedin className={iconClass} />
       </button>
-      
-      <button 
+
+      <button
+        type="button"
         onClick={() => handleShare("email")}
-        title="Share via Email"
-        className={`${btnClass} flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-800 hover:text-white transition-all text-gray-600`}
+        title={t("shareButtons.email")}
+        className={`${btnClass} flex items-center justify-center rounded-full bg-gray-100 text-gray-600 transition-all hover:bg-gray-800 hover:text-white dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-600`}
       >
         <Mail className={iconClass} />
       </button>
-      
-      <div className="relative group">
-        <button 
-            onClick={handleCopy}
-            title="Copy Link"
-            className={`${btnClass} flex items-center justify-center rounded-full bg-gray-100 hover:bg-[#D32F2F] hover:text-white transition-all text-gray-600 ${copied ? "!bg-green-500 !text-white" : ""}`}
+
+      <div className="group relative">
+        <button
+          type="button"
+          onClick={handleCopy}
+          title={t("shareButtons.copyTooltip")}
+          className={`${btnClass} flex items-center justify-center rounded-full bg-gray-100 text-gray-600 transition-all hover:bg-[#D32F2F] hover:text-white dark:bg-neutral-800 dark:text-neutral-200 ${copied ? "!bg-green-500 !text-white" : ""}`}
         >
-            {copied ? <Check className={iconClass} /> : <LinkIcon className={iconClass} />}
+          {copied ? <Check className={iconClass} /> : <LinkIcon className={iconClass} />}
         </button>
-        
-        {/* Tooltip for Copy Feedback */}
-        <div className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded shadow-lg transition-opacity duration-200 pointer-events-none whitespace-nowrap ${copied ? "opacity-100" : "opacity-0"}`}>
-            Link Copied!
-            <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-800"></div>
+
+        <div
+          className={`pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap rounded bg-gray-800 px-2 py-1 text-xs text-white shadow-lg transition-opacity duration-200 dark:bg-neutral-700 ${copied ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
+        >
+          {copied ? t("shareButtons.copied") : t("shareButtons.copyTooltip")}
+          <div className="absolute left-1/2 top-full -mt-1 -translate-x-1/2 border-4 border-transparent border-t-gray-800 dark:border-t-neutral-700" />
         </div>
       </div>
     </div>

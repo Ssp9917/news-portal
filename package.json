@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "set-admin": "node scripts/set-admin.mjs"
   },
   "dependencies": {
     "@next/third-parties": "^16.1.1",
@@ -20,6 +21,7 @@
     "mongoose": "^9.0.2",
     "next": "16.1.1",
     "next-auth": "^4.24.13",
+    "next-themes": "^0.4.6",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-redux": "^9.2.0",

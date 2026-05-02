@@ -16,7 +16,17 @@ export async function GET(request: Request) {
     if (query) {
       filter.$or = [
         { title: { $regex: query, $options: "i" } },
+        { "titleI18n.en": { $regex: query, $options: "i" } },
+        { "titleI18n.hi": { $regex: query, $options: "i" } },
+        { "titleI18n.bn": { $regex: query, $options: "i" } },
         { content: { $regex: query, $options: "i" } },
+        { "contentI18n.en": { $regex: query, $options: "i" } },
+        { "contentI18n.hi": { $regex: query, $options: "i" } },
+        { "contentI18n.bn": { $regex: query, $options: "i" } },
+        { excerpt: { $regex: query, $options: "i" } },
+        { "excerptI18n.en": { $regex: query, $options: "i" } },
+        { "excerptI18n.hi": { $regex: query, $options: "i" } },
+        { "excerptI18n.bn": { $regex: query, $options: "i" } },
         { tags: { $regex: query, $options: "i" } }
       ];
     }
