@@ -58,7 +58,8 @@ export default async function RootLayout({
   return (
     <html lang={locale} suppressHydrationWarning>
       <body
-        className={`${banglaFont.variable} ${notoSans.variable} min-h-screen antialiased`}
+        className={` ${banglaFont.variable} ${notoSans.variable} min-h-screen antialiased`}
+        style={{ fontFamily: "Georgia, var(--font-noto-sans), 'Times New Roman', serif" }}
         suppressHydrationWarning={true}
       >
         <AppThemeProvider>

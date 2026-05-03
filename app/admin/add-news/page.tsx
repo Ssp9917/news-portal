@@ -1,13 +1,121 @@
+// app/admin/add/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Eye, Save } from "lucide-react";
+import { ArrowLeft, Save, ChevronDown } from "lucide-react";
 import { ADMIN_NEWS_CATEGORIES } from "@/lib/admin-categories";
+import MediaUpload from "../../../components/admin/Mediaupload";
 
 const DRAFT_KEY = "news-draft";
 
+// ── Reusable section wrapper ───────────────────────────────────────────────────
+function Section({ title, children, badge }: {
+  title: string;
+  children: React.ReactNode;
+  badge?: string;
+}) {
+  return (
+    <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+      <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
+        <h3 className="text-sm font-bold tracking-tight text-gray-900">{title}</h3>
+        {badge && (
+          <span className="rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-red-500">
+            {badge}
+          </span>
+        )}
+      </div>
+      <div className="p-6">{children}</div>
+    </div>
+  );
+}
+
+// ── Collapsible i18n field ─────────────────────────────────────────────────────
+function I18nField({ label, name, value, onChange, rows = 3, isTextarea = false }: {
+  label: string;
+  name: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  rows?: number;
+  isTextarea?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const hasValue = value.trim().length > 0;
+
+  return (
+    <div className="rounded-xl border border-gray-100 bg-gray-50">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="flex w-full items-center justify-between px-4 py-2.5 text-left"
+      >
+        <span className="flex items-center gap-2 text-xs font-semibold text-gray-500">
+          <span className={`h-1.5 w-1.5 rounded-full ${hasValue ? "bg-green-400" : "bg-gray-300"}`} />
+          {label}
+        </span>
+        <ChevronDown className={`h-3.5 w-3.5 text-gray-400 transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && (
+        <div className="border-t border-gray-100 px-4 pb-4 pt-3">
+          {isTextarea ? (
+            <textarea
+              name={name}
+              value={value}
+              onChange={onChange}
+              rows={rows}
+              className="w-full resize-y rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+            />
+          ) : (
+            <input
+              type="text"
+              name={name}
+              value={value}
+              onChange={onChange}
+              className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+            />
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Toggle switch ──────────────────────────────────────────────────────────────
+function Toggle({ name, checked, onChange, label, description, accent = "blue" }: {
+  name: string;
+  checked: boolean;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  label: string;
+  description?: string;
+  accent?: "blue" | "red";
+}) {
+  const colors = {
+    blue: "peer-checked:bg-blue-500 peer-focus:ring-blue-200",
+    red: "peer-checked:bg-red-500 peer-focus:ring-red-200",
+  };
+
+  return (
+    <div className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
+      <div>
+        <p className="text-sm font-semibold text-gray-800">{label}</p>
+        {description && <p className="text-xs text-gray-400">{description}</p>}
+      </div>
+      <label className="relative inline-flex cursor-pointer items-center">
+        <input
+          type="checkbox"
+          name={name}
+          checked={checked}
+          onChange={onChange}
+          className="peer sr-only"
+        />
+        <div className={`relative h-6 w-11 rounded-full bg-gray-200 transition-colors after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow-sm after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-focus:outline-none peer-focus:ring-2 ${colors[accent]}`} />
+      </label>
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 export default function AddNews() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -32,115 +140,58 @@ export default function AddNews() {
     videoUrl: "",
   });
 
+  // Load draft
   useEffect(() => {
-    const savedDraft = localStorage.getItem(DRAFT_KEY);
-    if (savedDraft) {
-      try {
-        const parsedDraft = JSON.parse(savedDraft);
-        setFormData((prev) => ({ ...prev, ...parsedDraft }));
-      } catch (error) {
-        console.error("Failed to parse draft", error);
-      }
+    const saved = localStorage.getItem(DRAFT_KEY);
+    if (saved) {
+      try { setFormData((p) => ({ ...p, ...JSON.parse(saved) })); } catch { /* ignore */ }
     }
   }, []);
 
+  // Auto-save draft
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      localStorage.setItem(DRAFT_KEY, JSON.stringify(formData));
-    }, 500);
-    return () => clearTimeout(timeoutId);
+    const id = setTimeout(() => localStorage.setItem(DRAFT_KEY, JSON.stringify(formData)), 500);
+    return () => clearTimeout(id);
   }, [formData]);
 
   const slugify = (text: string) =>
-    text
-      .toLowerCase()
-      .trim()
+    text.toLowerCase().trim()
       .replace(/[^\w\s-]/g, "")
       .replace(/[\s_-]+/g, "-")
       .replace(/^-+|-+$/g, "");
 
-  const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     setFormData((prev) => {
-      const newData = {
+      const updated = {
         ...prev,
-        [name]:
-          type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
+        [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
       };
-
-      if (name === "title" && !prev.slug) {
-        newData.slug = slugify(value);
-      }
-
-      return newData;
+      if (name === "title" && !prev.slug) updated.slug = slugify(value);
+      return updated;
     });
-  };
-
-  const handleGalleryChange = (index: number, value: string) => {
-    setFormData((prev) => {
-      const newGallery = [...prev.gallery];
-      newGallery[index] = value;
-      return { ...prev, gallery: newGallery };
-    });
-  };
-
-  const addGalleryField = () => {
-    setFormData((prev) => ({ ...prev, gallery: [...prev.gallery, ""] }));
-  };
-
-  const removeGalleryField = (index: number) => {
-    setFormData((prev) => {
-      const newGallery = prev.gallery.filter((_, i) => i !== index);
-      return { ...prev, gallery: newGallery };
-    });
-  };
-
-  const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((prev) => ({ ...prev, slug: slugify(e.target.value) }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    const date = new Date().toLocaleDateString("en-US", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    });
-
-    const selectedCat = ADMIN_NEWS_CATEGORIES.find(
-      (c) => c.value === formData.category
-    );
+    const date = new Date().toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" });
+    const selectedCat = ADMIN_NEWS_CATEGORIES.find((c) => c.value === formData.category);
     const categoryColor = selectedCat?.color ?? "bg-gray-500";
 
     try {
-      const res = await fetch(`/api/news`, {
+      const res = await fetch("/api/news", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: formData.title,
-          titleI18n: {
-            en: formData.titleI18nEn,
-            hi: formData.titleI18nHi,
-          },
+          titleI18n: { en: formData.titleI18nEn, hi: formData.titleI18nHi },
           slug: formData.slug,
           excerpt: formData.excerpt,
-          excerptI18n: {
-            en: formData.excerptI18nEn,
-            hi: formData.excerptI18nHi,
-          },
+          excerptI18n: { en: formData.excerptI18nEn, hi: formData.excerptI18nHi },
           content: formData.content,
-          contentI18n: {
-            en: formData.contentI18nEn,
-            hi: formData.contentI18nHi,
-          },
+          contentI18n: { en: formData.contentI18nEn, hi: formData.contentI18nHi },
           category: formData.category,
           author: formData.author,
           image: formData.image,
@@ -149,11 +200,8 @@ export default function AddNews() {
           videoUrl: formData.videoUrl,
           date,
           categoryColor,
-          tags: formData.tags
-            .split(",")
-            .map((t) => t.trim())
-            .filter((t) => t),
-          gallery: formData.gallery.filter((url) => url.trim() !== ""),
+          tags: formData.tags.split(",").map((t) => t.trim()).filter(Boolean),
+          gallery: formData.gallery.filter((u) => u.trim()),
         }),
       });
 
@@ -164,8 +212,7 @@ export default function AddNews() {
         const data = await res.json();
         alert(data.error || "Failed to add article");
       }
-    } catch (error) {
-      console.error("Error adding news:", error);
+    } catch {
       alert("Failed to add article");
     } finally {
       setLoading(false);
@@ -173,362 +220,249 @@ export default function AddNews() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20 font-sans text-gray-900">
-      <nav className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3 shadow-sm md:px-6 md:py-4">
-        <div className="flex items-center gap-2 md:gap-4">
-          <Link
-            href="/admin/dashboard"
-            className="flex items-center gap-1 text-sm font-medium text-gray-500 transition-colors hover:text-gray-900"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <span className="hidden sm:inline">Back</span>
-          </Link>
-          <div className="mx-1 h-6 w-px bg-gray-300 md:mx-2" />
-          <h1 className="text-lg font-bold text-gray-900 md:text-xl">
-            New article
-          </h1>
-        </div>
-        <div className="flex items-center gap-2 md:gap-3">
-          <button
-            type="button"
-            className="hidden items-center gap-2 rounded-lg border border-gray-300 px-3 py-2 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50 sm:flex md:px-4 md:text-sm"
-          >
-            <Eye className="h-4 w-4" />
-            <span className="hidden md:inline">Preview</span>
-          </button>
+    <div className="min-h-screen bg-[#f8f9fb] pb-24 text-gray-900" style={{ fontFamily: "Georgia, serif" }}>
+
+      {/* ── Sticky top nav ── */}
+      <nav className="sticky top-0 z-20 border-b border-gray-200/80 bg-white/90 px-4 py-3 backdrop-blur-md md:px-6">
+        <div className="mx-auto flex max-w-[1400px] items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Link href="/admin/dashboard"
+              className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium text-gray-500 transition hover:bg-gray-100 hover:text-gray-900">
+              <ArrowLeft className="h-4 w-4" />
+              <span className="hidden sm:inline">Back</span>
+            </Link>
+            <div className="h-5 w-px bg-gray-200" />
+            <h1 className="text-base font-bold text-gray-900 md:text-lg">New Article</h1>
+            <span className="hidden rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-600 sm:inline">
+              Draft
+            </span>
+          </div>
           <button
             type="button"
             onClick={handleSubmit}
             disabled={loading}
-            className="flex items-center gap-2 rounded-lg bg-[#0F172A] px-4 py-2 text-xs font-medium text-white shadow-sm transition-colors hover:bg-black disabled:opacity-50 md:px-6 md:text-sm"
+            className="flex items-center gap-2 rounded-xl bg-gray-900 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-black disabled:opacity-50"
           >
             {loading ? (
-              <>Saving…</>
+              <><svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>Saving…</>
             ) : (
-              <>
-                <Save className="h-4 w-4" />
-                <span>Publish</span>
-              </>
+              <><Save className="h-4 w-4" /><span>Publish</span></>
             )}
           </button>
         </div>
       </nav>
 
-      <div className="mx-auto w-full max-w-[1600px] overflow-x-hidden px-4 py-4 md:px-6 md:py-8">
-        <form onSubmit={handleSubmit} className="grid grid-cols-12 gap-4 lg:gap-8">
-          <div className="col-span-12 space-y-6 lg:col-span-8">
-            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-              <label className="mb-2 block text-sm font-semibold text-gray-700">
-                Title *
-              </label>
-              <input
-                type="text"
+      {/* ── Body ── */}
+      <div className="mx-auto w-full max-w-[1400px] px-4 py-6 md:px-6 md:py-8">
+        <form onSubmit={handleSubmit} className="grid grid-cols-12 gap-5 lg:gap-7">
+
+          {/* ── LEFT: Main content ── */}
+          <div className="col-span-12 space-y-5 lg:col-span-8">
+
+            {/* Title */}
+            <Section title="Headline">
+              <textarea
                 name="title"
                 value={formData.title}
                 onChange={handleChange}
-                placeholder="Article headline"
-                className="w-full rounded-lg border border-gray-200 px-4 py-3 text-lg outline-none transition-all placeholder:text-gray-400 focus:border-transparent focus:ring-2 focus:ring-blue-500"
+                rows={2}
+                placeholder="Write a compelling headline…"
+                className="w-full resize-none rounded-xl border border-gray-200 px-4 py-3 text-xl font-bold leading-snug outline-none transition placeholder:font-normal placeholder:text-gray-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
                 required
               />
-              <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
-                <div>
-                  <label className="mb-1 block text-xs font-semibold text-gray-600">
-                    Title (English)
-                  </label>
-                  <input
-                    type="text"
-                    name="titleI18nEn"
-                    value={formData.titleI18nEn}
-                    onChange={handleChange}
-                    placeholder="English title (optional)"
-                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-xs font-semibold text-gray-600">
-                    Title (Hindi)
-                  </label>
-                  <input
-                    type="text"
-                    name="titleI18nHi"
-                    value={formData.titleI18nHi}
-                    onChange={handleChange}
-                    placeholder="Hindi title (optional)"
-                    className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-              <label className="mb-2 block text-sm font-semibold text-gray-700">
-                URL slug
-              </label>
-              <div className="flex items-center">
-                <span className="select-none whitespace-nowrap rounded-l-lg border border-r-0 border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-500">
-                  /bn/news/
-                </span>
+              {/* URL slug */}
+              <div className="mt-3 flex items-center overflow-hidden rounded-xl border border-gray-200 bg-gray-50 text-sm">
+                <span className="select-none border-r border-gray-200 bg-gray-100 px-3 py-2.5 text-gray-400 text-xs whitespace-nowrap">/news/</span>
                 <input
                   type="text"
                   name="slug"
                   value={formData.slug}
-                  onChange={handleSlugChange}
-                  placeholder="article-url-slug"
-                  className="w-full flex-1 rounded-r-lg border border-gray-200 px-4 py-3 text-sm text-gray-600 outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-blue-500"
+                  onChange={(e) => setFormData((p) => ({ ...p, slug: slugify(e.target.value) }))}
+                  placeholder="url-slug"
+                  className="flex-1 bg-transparent px-3 py-2.5 text-gray-600 outline-none"
                 />
               </div>
-            </div>
+              {/* i18n */}
+              <div className="mt-3 space-y-2">
+                <I18nField label="Title in English" name="titleI18nEn" value={formData.titleI18nEn} onChange={handleChange} />
+                <I18nField label="Title in Hindi (हिन्दी)" name="titleI18nHi" value={formData.titleI18nHi} onChange={handleChange} />
+              </div>
+            </Section>
 
-            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-              <label className="mb-2 block text-sm font-semibold text-gray-700">
-                Excerpt / summary *
-              </label>
+            {/* Excerpt */}
+            <Section title="Excerpt / Summary" badge="required">
               <textarea
                 name="excerpt"
                 value={formData.excerpt}
                 onChange={handleChange}
                 rows={3}
-                placeholder="Short summary for listings and SEO"
-                className="w-full resize-y rounded-lg border border-gray-200 px-4 py-3 text-sm outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-blue-500"
+                placeholder="A short summary shown in article cards and SEO…"
+                className="w-full resize-y rounded-xl border border-gray-200 px-4 py-3 text-sm leading-relaxed outline-none transition placeholder:text-gray-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
                 required
               />
-              <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
-                <div>
-                  <label className="mb-1 block text-xs font-semibold text-gray-600">
-                    Excerpt (English)
-                  </label>
-                  <textarea
-                    name="excerptI18nEn"
-                    value={formData.excerptI18nEn}
-                    onChange={handleChange}
-                    rows={3}
-                    placeholder="English excerpt (optional)"
-                    className="w-full resize-y rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-xs font-semibold text-gray-600">
-                    Excerpt (Hindi)
-                  </label>
-                  <textarea
-                    name="excerptI18nHi"
-                    value={formData.excerptI18nHi}
-                    onChange={handleChange}
-                    rows={3}
-                    placeholder="Hindi excerpt (optional)"
-                    className="w-full resize-y rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
+              <div className="mt-3 space-y-2">
+                <I18nField label="Excerpt in English" name="excerptI18nEn" value={formData.excerptI18nEn} onChange={handleChange} isTextarea rows={3} />
+                <I18nField label="Excerpt in Hindi (हिन्दी)" name="excerptI18nHi" value={formData.excerptI18nHi} onChange={handleChange} isTextarea rows={3} />
               </div>
-            </div>
+            </Section>
 
-            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-              <label className="mb-2 block text-sm font-semibold text-gray-700">
-                Full article *
-              </label>
+            {/* Content */}
+            <Section title="Full Article (HTML)" badge="required">
               <textarea
                 name="content"
                 value={formData.content}
                 onChange={handleChange}
-                rows={15}
-                placeholder="Full HTML content (supports p, headings, lists, embeds…)"
-                className="w-full resize-y rounded-lg border border-gray-200 px-4 py-3 font-mono text-sm leading-relaxed outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-blue-500"
+                rows={16}
+                placeholder="<p>Write your full article here. HTML tags supported — p, h2, h3, ul, li, strong, em, blockquote…</p>"
+                className="w-full resize-y rounded-xl border border-gray-200 px-4 py-3 font-mono text-sm leading-relaxed outline-none transition placeholder:font-sans placeholder:text-gray-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
                 required
               />
-              <div className="mt-4 grid grid-cols-1 gap-3">
-                <div>
-                  <label className="mb-1 block text-xs font-semibold text-gray-600">
-                    Full article (English HTML)
-                  </label>
-                  <textarea
-                    name="contentI18nEn"
-                    value={formData.contentI18nEn}
-                    onChange={handleChange}
-                    rows={10}
-                    placeholder="English HTML content (optional)"
-                    className="w-full resize-y rounded-lg border border-gray-200 px-3 py-2 font-mono text-sm leading-relaxed outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-xs font-semibold text-gray-600">
-                    Full article (Hindi HTML)
-                  </label>
-                  <textarea
-                    name="contentI18nHi"
-                    value={formData.contentI18nHi}
-                    onChange={handleChange}
-                    rows={10}
-                    placeholder="Hindi HTML content (optional)"
-                    className="w-full resize-y rounded-lg border border-gray-200 px-3 py-2 font-mono text-sm leading-relaxed outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
+              <div className="mt-3 space-y-2">
+                <I18nField label="Full article in English (HTML)" name="contentI18nEn" value={formData.contentI18nEn} onChange={handleChange} isTextarea rows={10} />
+                <I18nField label="Full article in Hindi (HTML)" name="contentI18nHi" value={formData.contentI18nHi} onChange={handleChange} isTextarea rows={10} />
               </div>
               <p className="mt-2 text-xs text-gray-400">
-                You can use HTML tags for formatting (e.g. p, h3, ul, li, strong,
-                em).
+                Supports: &lt;p&gt; &lt;h2&gt; &lt;h3&gt; &lt;ul&gt; &lt;li&gt; &lt;strong&gt; &lt;em&gt; &lt;blockquote&gt; &lt;a&gt;
               </p>
-            </div>
+            </Section>
+
           </div>
 
-          <div className="col-span-12 space-y-6 lg:col-span-4">
-            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-              <h3 className="mb-4 text-sm font-bold text-gray-900">Publishing</h3>
+          {/* ── RIGHT: Sidebar ── */}
+          <div className="col-span-12 space-y-5 lg:col-span-4">
 
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <label className="text-sm text-gray-600">Published</label>
-                  <label className="relative inline-flex cursor-pointer items-center">
-                    <input
-                      type="checkbox"
-                      name="published"
-                      checked={formData.published}
-                      onChange={handleChange}
-                      className="peer sr-only"
-                    />
-                    <div className="relative h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-blue-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300" />
-                  </label>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <label className="text-sm text-gray-600">Breaking news</label>
-                  <label className="relative inline-flex cursor-pointer items-center">
-                    <input
-                      type="checkbox"
-                      name="isBreaking"
-                      checked={formData.isBreaking}
-                      onChange={handleChange}
-                      className="peer sr-only"
-                    />
-                    <div className="relative h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-red-600 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-red-300" />
-                  </label>
-                </div>
+            {/* Publishing */}
+            <Section title="Publishing">
+              <div className="space-y-3">
+                <Toggle name="published" checked={formData.published} onChange={handleChange}
+                  label="Published" description="Visible to readers" accent="blue" />
+                <Toggle name="isBreaking" checked={formData.isBreaking} onChange={handleChange}
+                  label="Breaking News" description="Shown in breaking banner" accent="red" />
               </div>
-            </div>
+            </Section>
 
-            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-              <h3 className="mb-4 text-sm font-bold text-gray-900">Category</h3>
+            {/* Category */}
+            <Section title="Category">
               <div className="relative">
                 <select
                   name="category"
                   value={formData.category}
                   onChange={handleChange}
-                  className="w-full cursor-pointer appearance-none rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm text-gray-600 outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full cursor-pointer appearance-none rounded-xl border border-gray-200 bg-white px-4 py-2.5 pr-9 text-sm text-gray-700 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
                 >
                   {ADMIN_NEWS_CATEGORIES.map((cat) => (
-                    <option key={cat.value} value={cat.value}>
-                      {cat.label}
-                    </option>
+                    <option key={cat.value} value={cat.value}>{cat.label}</option>
                   ))}
                 </select>
-                <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">
-                  <svg
-                    className="h-4 w-4 text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                </div>
+                <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
               </div>
-            </div>
+            </Section>
 
-            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-              <h3 className="mb-4 text-sm font-bold text-gray-900">Featured image</h3>
+            {/* Featured image */}
+            <Section title="Featured Image">
+              <MediaUpload
+                label=""
+                value={formData.image}
+                onChange={(url) => setFormData((p) => ({ ...p, image: url }))}
+                type="image"
+                placeholder="https://… or upload"
+              />
+            </Section>
+
+            {/* Video */}
+            <Section title="Video">
+              <MediaUpload
+                label=""
+                value={formData.videoUrl}
+                onChange={(url) => setFormData((p) => ({ ...p, videoUrl: url }))}
+                type="video"
+                placeholder="YouTube URL or upload video"
+              />
+            </Section>
+
+            {/* Author */}
+            <Section title="Author">
+              <div className="relative">
+                <svg className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+                  fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                <input
+                  type="text"
+                  name="author"
+                  value={formData.author}
+                  onChange={handleChange}
+                  className="w-full rounded-xl border border-gray-200 py-2.5 pl-10 pr-4 text-sm text-gray-700 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                />
+              </div>
+            </Section>
+
+            {/* Tags */}
+            <Section title="Tags">
               <input
                 type="text"
-                name="image"
-                value={formData.image}
+                name="tags"
+                value={formData.tags}
                 onChange={handleChange}
-                placeholder="Image URL"
-                className="w-full rounded-lg border border-gray-200 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="politics, cricket, tech"
+                className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-700 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
               />
-            </div>
+              <p className="mt-1.5 text-xs text-gray-400">Separate with commas</p>
+              {formData.tags && (
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {formData.tags.split(",").map((t) => t.trim()).filter(Boolean).map((tag) => (
+                    <span key={tag} className="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-600">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </Section>
 
-            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-              <h3 className="mb-4 text-sm font-bold text-gray-900">Image gallery</h3>
-              <div className="space-y-3">
-                {formData.gallery.map((url, index) => (
-                  <div key={index} className="flex gap-2">
+            {/* Gallery */}
+            <Section title="Image Gallery">
+              <div className="space-y-2.5">
+                {formData.gallery.map((url, i) => (
+                  <div key={i} className="flex gap-2">
                     <input
                       type="text"
                       value={url}
-                      onChange={(e) => handleGalleryChange(index, e.target.value)}
-                      placeholder={`Image URL ${index + 1}`}
-                      className="flex-1 rounded-lg border border-gray-200 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                      onChange={(e) => {
+                        const g = [...formData.gallery];
+                        g[i] = e.target.value;
+                        setFormData((p) => ({ ...p, gallery: g }));
+                      }}
+                      placeholder={`Image URL ${i + 1}`}
+                      className="flex-1 rounded-xl border border-gray-200 px-3 py-2 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
                     />
                     <button
                       type="button"
-                      onClick={() => removeGalleryField(index)}
-                      className="rounded-lg p-2 text-red-500 transition-colors hover:bg-red-50"
-                      title="Remove"
+                      onClick={() => setFormData((p) => ({ ...p, gallery: p.gallery.filter((_, j) => j !== i) }))}
+                      className="rounded-xl p-2 text-gray-400 transition hover:bg-red-50 hover:text-red-500"
                     >
-                      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                        />
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                       </svg>
                     </button>
                   </div>
                 ))}
                 <button
                   type="button"
-                  onClick={addGalleryField}
-                  className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-gray-300 py-2 text-sm font-medium text-gray-500 transition-colors hover:border-blue-500 hover:text-blue-500"
+                  onClick={() => setFormData((p) => ({ ...p, gallery: [...p.gallery, ""] }))}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-200 py-2.5 text-xs font-semibold text-gray-400 transition hover:border-blue-300 hover:text-blue-500"
                 >
                   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                   </svg>
-                  Add gallery image URL
+                  Add image URL
                 </button>
               </div>
-            </div>
+            </Section>
 
-            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-              <h3 className="mb-4 text-sm font-bold text-gray-900">
-                Video (YouTube URL)
-              </h3>
-              <input
-                type="text"
-                name="videoUrl"
-                value={formData.videoUrl}
-                onChange={handleChange}
-                placeholder="https://www.youtube.com/watch?v=… or youtu.be/…"
-                className="w-full rounded-lg border border-gray-200 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-              <h3 className="mb-4 text-sm font-bold text-gray-900">Tags</h3>
-              <input
-                type="text"
-                name="tags"
-                value={formData.tags}
-                onChange={handleChange}
-                placeholder="tag1, tag2, tag3"
-                className="w-full rounded-lg border border-gray-200 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <p className="mt-2 text-xs text-gray-400">Separate tags with commas.</p>
-            </div>
-
-            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-              <h3 className="mb-4 text-sm font-bold text-gray-900">Author</h3>
-              <input
-                type="text"
-                name="author"
-                value={formData.author}
-                onChange={handleChange}
-                className="w-full rounded-lg border border-gray-200 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
           </div>
         </form>
       </div>

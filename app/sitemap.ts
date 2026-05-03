@@ -13,7 +13,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     entries.push({
       url: `${base}/${locale}`,
       lastModified,
-      priority: locale === "bn" ? 1 : 0.9,
+      priority: locale === "hi" ? 1 : 0.9,
     });
 
     for (const slug of CATEGORY_SLUGS) {

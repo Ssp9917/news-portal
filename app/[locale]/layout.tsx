@@ -41,7 +41,7 @@ export default async function LocaleLayout({ children, params }: Props) {
   const locale = raw as Locale;
   const dictionary = await getDictionary(locale);
 
-  const fontClass = locale === "bn" ? "font-anek" : "font-noto";
+  const fontClass = locale === "bn" ? "font-anek" : "Georgia";
 
   return (
     <I18nProvider locale={locale} dictionary={dictionary as Record<string, unknown>}>
