@@ -33,7 +33,9 @@ export interface INews extends Document {
   views?: number;
   breakingExpiresAt?: Date;
   videoUrl?: string;
+  tenantId?: string | null;
 }
+
 
 const NewsSchema: Schema = new Schema(
   {
@@ -68,6 +70,7 @@ const NewsSchema: Schema = new Schema(
     views: { type: Number, default: 0 },
     breakingExpiresAt: { type: Date },
     videoUrl: { type: String, default: "" },
+    tenantId: { type: String, default: null, index: true },
   },
   {
     timestamps: true,

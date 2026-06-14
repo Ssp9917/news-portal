@@ -1,15 +1,22 @@
-
 import { NextResponse } from "next/server";
 import connectDB from "@/lib/db";
 import { User } from "@/models/User";
 import bcrypt from "bcryptjs";
+import { signToken } from "@/lib/auth/jwt";
 
 export async function POST(req: Request) {
   try {
     await connectDB();
     const { email, password } = await req.json();
 
-    const user = await User.findOne({ email });
+    if (!email || !password) {
+      return NextResponse.json(
+        { message: "Email and password are required" },
+        { status: 400 }
+      );
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
 
     if (!user) {
       return NextResponse.json(
@@ -18,15 +25,22 @@ export async function POST(req: Request) {
       );
     }
 
-    if (user.role !== "admin") {
-         return NextResponse.json(
-        { message: "Access denied" },
+    if (!user.isActive) {
+      return NextResponse.json(
+        { message: "Your account has been deactivated. Contact a Super Admin." },
+        { status: 403 }
+      );
+    }
+
+    const allowedRoles = ["super_admin", "admin", "editor", "viewer"];
+    if (!allowedRoles.includes(user.role)) {
+      return NextResponse.json(
+        { message: "Access denied. Insufficient permissions." },
         { status: 403 }
       );
     }
 
     const isMatch = await bcrypt.compare(password, user.password || "");
-
     if (!isMatch) {
       return NextResponse.json(
         { message: "Invalid email or password" },
@@ -34,20 +48,30 @@ export async function POST(req: Request) {
       );
     }
 
-    // specific simplified response for the frontend
-    return NextResponse.json({
-      message: "Login successful",
-      token: "admin_token_secure_placeholder", // In production use JWT
-      user: {
-          email: user.email,
-          role: user.role
-      }
+    const token = signToken({
+      userId: String(user._id),
+      email: user.email,
+      role: user.role,
+      tenantId: user.tenantId ?? null,
+      name: user.name ?? "",
     });
 
-  } catch (error: any) {
+    return NextResponse.json({
+      message: "Login successful",
+      token,
+      user: {
+        id: String(user._id),
+        email: user.email,
+        name: user.name ?? "",
+        role: user.role,
+        tenantId: user.tenantId ?? null,
+      },
+    });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Unknown error";
     console.error("Admin Login Error:", error);
     return NextResponse.json(
-      { message: "Something went wrong", error: error.message },
+      { message: "Something went wrong", error: message },
       { status: 500 }
     );
   }

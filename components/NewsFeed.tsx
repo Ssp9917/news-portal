@@ -7,6 +7,7 @@ import { useAppDispatch, useAppSelector } from "@/lib/hooks";
 import { setInitialNews, fetchMoreNews, resetNewsState } from "@/lib/features/newsSlice";
 import type { Locale } from "@/lib/i18n/config";
 import { useI18n } from "@/components/providers/i18n-provider";
+import NewsFeedSkeleton from "@/components/skeletons/NewsFeedSkeleton";
 
 interface NewsFeedProps {
   initialNews: Array<Record<string, unknown>>;
@@ -32,17 +33,25 @@ export default function NewsFeed({ initialNews, locale }: NewsFeedProps) {
     dispatch(fetchMoreNews(page));
   };
 
+  const displayNews = news.length > 0 ? news : initialNews;
+
+  // Show shimmer skeleton on initial load (no items yet and loading)
+  if (loading && displayNews.length === 0) {
+    return <NewsFeedSkeleton count={8} />;
+  }
+
   const container = {
     hidden: { opacity: 0 },
     show: {
       opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-      },
+      transition: { staggerChildren: 0.07 },
     },
   };
 
-  const displayNews = news.length > 0 ? news : initialNews;
+  const item = {
+    hidden: { opacity: 0, y: 16 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.35 } },
+  };
 
   return (
     <>
@@ -53,12 +62,13 @@ export default function NewsFeed({ initialNews, locale }: NewsFeedProps) {
         className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4"
       >
         {displayNews.length > 0 ? (
-          displayNews.map((item: Record<string, unknown>, idx: number) => (
-            <NewsCard
-              key={`${String(item._id)}-${idx}`}
-              locale={locale}
-              {...(item as never)}
-            />
+          displayNews.map((newsItem: Record<string, unknown>, idx: number) => (
+            <motion.div key={`${String(newsItem._id)}-${idx}`} variants={item}>
+              <NewsCard
+                locale={locale}
+                {...(newsItem as never)}
+              />
+            </motion.div>
           ))
         ) : (
           <p className="col-span-full py-10 text-center text-gray-500 dark:text-neutral-400">
@@ -73,9 +83,19 @@ export default function NewsFeed({ initialNews, locale }: NewsFeedProps) {
             type="button"
             onClick={loadMore}
             disabled={loading}
-            className="rounded border border-gray-300 px-6 py-2 text-sm font-medium transition-colors hover:bg-gray-50 disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:hover:bg-neutral-800"
+            className="group relative overflow-hidden rounded-lg border border-gray-300 px-8 py-2.5 text-sm font-semibold transition-all hover:border-[#D32F2F] hover:text-[#D32F2F] disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-100 dark:hover:border-red-400 dark:hover:text-red-400"
           >
-            {loading ? t("feed.loading") : t("feed.loadMore")}
+            {loading ? (
+              <span className="flex items-center gap-2">
+                <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                {t("feed.loading")}
+              </span>
+            ) : (
+              t("feed.loadMore")
+            )}
           </button>
         </div>
       )}

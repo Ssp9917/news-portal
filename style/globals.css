@@ -10,6 +10,7 @@
   --font-tiro: var(--font-tiro-bangla);
 
   --animate-marquee: marquee 30s linear infinite;
+  --animate-shimmer: shimmer 1.6s ease-in-out infinite;
 
   @keyframes marquee {
     0% {
@@ -19,11 +20,22 @@
       transform: translateX(-100%);
     }
   }
+
+  @keyframes shimmer {
+    0% {
+      background-position: -600px 0;
+    }
+    100% {
+      background-position: 600px 0;
+    }
+  }
 }
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --shimmer-base: #e2e8f0;
+  --shimmer-highlight: #f8fafc;
 }
 
 body {
@@ -35,9 +47,56 @@ body {
 .dark {
   --background: #0a0a0a;
   --foreground: #ededed;
+  --shimmer-base: #1e293b;
+  --shimmer-highlight: #334155;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
 }
+
+/* ─── Skeleton / Shimmer ──────────────────────────────── */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--shimmer-base) 25%,
+    var(--shimmer-highlight) 50%,
+    var(--shimmer-base) 75%
+  );
+  background-size: 1200px 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+  border-radius: 0.375rem;
+}
+
+.skeleton-text {
+  height: 0.875rem;
+  border-radius: 0.25rem;
+}
+
+.skeleton-round {
+  border-radius: 9999px;
+}
+
+/* ─── Scrollbar ───────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+
+/* ─── Focus ring ──────────────────────────────────────── */
+*:focus-visible {
+  outline: 2px solid #D32F2F;
+  outline-offset: 2px;
+}
+
