@@ -193,7 +193,7 @@ export async function ensureDefaultData() {
         {
           id: "sec-hero",
           type: "hero-spotlight",
-          title: "प्रमुख समाचार (Top Briefing)",
+          title: "प्रमुख समाचार (Bharat Pulse)",
           subtitle: "आज की सबसे बड़ी और महत्वपूर्ण राष्ट्रीय व वैश्विक सुर्खियां",
           layout: "split",
           articleCount: 5,

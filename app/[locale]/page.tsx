@@ -4,13 +4,12 @@ import PremiumHeader from "@/components/PremiumHeader";
 import BreakingNews from "@/components/BreakingNews";
 import HeroSpotlight from "@/components/homepage/HeroSpotlight";
 import LatestNewsWithAd from "@/components/homepage/LatestNewsWithAd";
-import TopBriefingSectionGrid from "@/components/homepage/TopBriefingSectionGrid";
+import SectionNewsGrid from "@/components/homepage/SectionNewsGrid";
 import VideoHub from "@/components/homepage/VideoHub";
 import Footer from "@/components/Footer";
 import connectDB from "@/lib/db";
 import News from "@/models/News";
 import { ensureDefaultData } from "@/lib/init-defaults";
-import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { isLocale, locales, type Locale } from "@/lib/i18n/config";
 import { getSiteUrl } from "@/lib/site-url";
 import { notFound } from "next/navigation";
@@ -26,7 +25,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const site = getSiteUrl();
 
   return {
-    title: "Top Briefing — देश और दुनिया की ताज़ा ख़बरें | National & World News",
+    title: "Bharat Pulse (भारत पल्स) — देश और दुनिया की ताज़ा ख़बरें | National & World News",
     description: "राजनीति, खेल, तकनीक, दुनिया, व्यापार, मनोरंजन, स्वास्थ्य और मौसम से ताज़ा और प्रामाणिक ख़बरें।",
     alternates: {
       canonical: `${site}/${locale}`,
@@ -62,7 +61,7 @@ export default async function Home({ params }: Props) {
 
   const allNews = await getHomepageData();
 
-  // Curate news for each specific editorial beat matching the screenshot
+  // Curate news for each specific editorial beat matching the reference layout
   const sportsNews = allNews.filter(
     (n: any) =>
       n.category === "खेल" ||
@@ -99,14 +98,14 @@ export default async function Home({ params }: Props) {
       {/* 1. Top Utility Bar: Date, Time, Location Updated | Login/SignUp + Socials */}
       <TopBar />
 
-      {/* 2. Main Red Header: Top Briefing logo, Home, Categories ▾, Hindi categories, Search, ! SUBSCRIBE */}
+      {/* 2. Main Red Header: Bharat Pulse logo, Home, Categories ▾, Hindi categories, Search, ! SUBSCRIBE */}
       <PremiumHeader />
 
       {/* 3. Breaking News Ticker: ! BREAKING NEWS red pill, scrolling text, < > arrows */}
       <BreakingNews news={allNews} locale={locale} />
 
-      {/* Main Container */}
-      <main className="container mx-auto max-w-7xl px-4 py-6">
+      {/* Main Container with landmark id for skip-to-content accessibility */}
+      <main id="main-content" tabIndex={-1} className="container mx-auto max-w-7xl px-4 py-6 outline-none">
         {/* Section 1: Hero Section (3 columns: 50% Featured Taxi/Rain Card | 25% 4 Stacked Cards | 25% 1-5 Trending Box) */}
         <HeroSpotlight news={allNews} locale={locale} />
 
@@ -121,7 +120,7 @@ export default async function Home({ params }: Props) {
         />
 
         {/* Section 4: "🏏 खेल" (Sports News - 4 Cards Grid) */}
-        <TopBriefingSectionGrid
+        <SectionNewsGrid
           iconEmoji="🏏"
           title="खेल"
           categorySlug="sports"
@@ -130,7 +129,7 @@ export default async function Home({ params }: Props) {
         />
 
         {/* Section 5: "📈 बिजनेस" (Business News - 4 Cards Grid with stock market charts) */}
-        <TopBriefingSectionGrid
+        <SectionNewsGrid
           iconEmoji="📈"
           title="बिजनेस"
           categorySlug="business"
@@ -139,7 +138,7 @@ export default async function Home({ params }: Props) {
         />
 
         {/* Section 6: "💻 टेक्नोलॉजी" (Technology News - 4 Cards Grid + 2 Bottom Load More buttons) */}
-        <TopBriefingSectionGrid
+        <SectionNewsGrid
           iconEmoji="💻"
           title="टेक्नोलॉजी"
           categorySlug="technology"
@@ -152,7 +151,7 @@ export default async function Home({ params }: Props) {
         <VideoHub news={allNews} locale={locale} />
       </main>
 
-      {/* 4. Dark Footer (Top Briefing logo, contact email, Android App button, Category counts, 5 Recent news with thumbnails) */}
+      {/* 4. Dark Footer (Bharat Pulse logo, contact email, Android App button, Category counts, 5 Recent news with thumbnails) */}
       <Footer />
     </div>
   );

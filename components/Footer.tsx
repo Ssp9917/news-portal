@@ -64,14 +64,15 @@ export default function Footer() {
       <div className="fixed right-0 top-1/2 -translate-y-1/2 z-40 hidden md:block">
         <a
           href="#sec-videos"
+          aria-label="लाइव टीवी प्रसारण देखें (Watch Live TV)"
           className="flex items-center gap-1.5 rounded-l-lg bg-[#c61d23] px-2.5 py-3 text-[11px] font-black uppercase text-white shadow-xl hover:bg-[#a8161b] transition-all [writing-mode:vertical-rl] rotate-180"
         >
-          <Play className="h-3.5 w-3.5 fill-current rotate-90" />
+          <Play className="h-3.5 w-3.5 fill-current rotate-90" aria-hidden="true" />
           <span className="tracking-widest">LIVE TV</span>
         </a>
       </div>
 
-      <footer className="bg-[#141414] text-gray-300 pt-12 pb-6 border-t border-neutral-800">
+      <footer className="bg-[#141414] text-gray-300 pt-12 pb-6 border-t border-neutral-800" aria-label="मुख्य पादलेख (Footer)">
         <div className="container mx-auto max-w-7xl px-4">
           <div className="mb-12 grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-4 text-xs">
             {/* ── Col 1: About Bharat Pulse ── */}
@@ -82,17 +83,18 @@ export default function Footer() {
                 <a
                   href="mailto:editorial@bharatpulse.in"
                   className="font-bold text-emerald-400 hover:underline"
+                  aria-label="Contact editorial team via email"
                 >
                   editorial@bharatpulse.in
                 </a>
               </div>
 
-              <p className="text-[11px] leading-relaxed text-gray-400">
+              <p className="text-[11px] leading-relaxed text-gray-300">
                 Today&apos;s verified news: Get latest and Breaking News on Politics, Business,
                 Economy, Technology, and Sports along with authentic investigative reports from ground.
               </p>
 
-              <p className="text-[11px] leading-relaxed text-gray-400">
+              <p className="text-[11px] leading-relaxed text-gray-300">
                 भारत पल्स: देश और दुनिया की हर हलचल पर 24 घंटे निष्पक्ष और सटीक पत्रकारिता का अग्रणी मंच।
               </p>
 
@@ -100,9 +102,10 @@ export default function Footer() {
               <div className="pt-2">
                 <a
                   href="#"
-                  className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-950/40 px-3.5 py-1.5 text-[11px] font-semibold text-emerald-400 hover:bg-emerald-900/40 transition-colors shadow-sm"
+                  aria-label="भारत पल्स एंड्रॉइड ऐप डाउनलोड करें"
+                  className="inline-flex items-center gap-2 rounded-full border border-emerald-500/40 bg-emerald-950/60 px-3.5 py-1.5 text-[11px] font-semibold text-emerald-300 hover:bg-emerald-900/60 transition-colors shadow-sm"
                 >
-                  <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" aria-hidden="true" />
                   <span>News App Available on Android</span>
                 </a>
               </div>
@@ -110,10 +113,10 @@ export default function Footer() {
 
             {/* ── Col 2: Editorial Links ── */}
             <div>
-              <h4 className="mb-4 text-sm font-bold uppercase tracking-wider text-white border-b border-neutral-800 pb-2">
+              <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-white border-b border-neutral-800 pb-2">
                 Editorial Desk
-              </h4>
-              <ul className="space-y-2.5 text-gray-400">
+              </h3>
+              <ul className="space-y-2.5 text-gray-300 font-medium">
                 <li>
                   <Link href="/about" className="hover:text-white transition-colors">
                     About Us (हमारे बारे में)
@@ -140,7 +143,7 @@ export default function Footer() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="/admin" className="text-[#c61d23] font-semibold hover:underline">
+                  <Link href="/admin" className="text-red-400 font-bold hover:underline">
                     Admin CMS Studio
                   </Link>
                 </li>
@@ -149,17 +152,18 @@ export default function Footer() {
 
             {/* ── Col 3: Category with Counts ── */}
             <div>
-              <h4 className="mb-4 text-sm font-bold uppercase tracking-wider text-white border-b border-neutral-800 pb-2">
+              <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-white border-b border-neutral-800 pb-2">
                 Categories
-              </h4>
-              <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-[11px] text-gray-400">
+              </h3>
+              <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-[11px] text-gray-300 font-medium">
                 {categoriesWithCounts.map((cat, idx) => (
                   <Link
                     key={idx}
                     href={withLocale(locale, `/category/${cat.slug}`)}
                     className="hover:text-white transition-colors truncate"
+                    aria-label={`${cat.name} श्रेणी (${cat.count} लेख)`}
                   >
-                    {cat.name} <span className="text-gray-500">({cat.count})</span>
+                    {cat.name} <span className="text-gray-400 font-normal">({cat.count})</span>
                   </Link>
                 ))}
               </div>
@@ -167,28 +171,33 @@ export default function Footer() {
 
             {/* ── Col 4: Recent News with Thumbnails ── */}
             <div>
-              <h4 className="mb-4 text-sm font-bold uppercase tracking-wider text-white border-b border-neutral-800 pb-2">
+              <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-white border-b border-neutral-800 pb-2">
                 Recent News
-              </h4>
+              </h3>
               <div className="space-y-3">
                 {recentStories.map((story, i) => (
                   <Link
                     key={i}
                     href={withLocale(locale, story.href)}
-                    className="group flex items-start gap-2.5 transition-colors"
+                    className="group flex items-start gap-2.5 transition-colors focus:outline-none focus:ring-1 focus:ring-white rounded"
+                    aria-label={story.title}
                   >
                     <div className="relative h-12 w-14 shrink-0 overflow-hidden rounded bg-neutral-800">
                       <img
                         src={story.img}
                         alt={story.title}
+                        width={56}
+                        height={48}
+                        loading="lazy"
+                        decoding="async"
                         className="h-full w-full object-cover"
                       />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h5 className="text-[11px] font-bold leading-tight text-white line-clamp-2 group-hover:text-[#c61d23] transition-colors">
+                      <h4 className="text-[11px] font-bold leading-tight text-white line-clamp-2 group-hover:text-red-400 transition-colors">
                         {story.title}
-                      </h5>
-                      <span className="text-[10px] text-gray-500 font-mono mt-0.5 block">
+                      </h4>
+                      <span className="text-[10px] text-gray-400 font-mono mt-0.5 block">
                         {story.date}
                       </span>
                     </div>
@@ -199,36 +208,42 @@ export default function Footer() {
           </div>
 
           {/* ── Bottom Sub-Footer ── */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-neutral-800 pt-5 text-[11px] text-gray-500">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-neutral-800 pt-5 text-[11px] text-gray-400">
             <p>
               Copyright © {new Date().getFullYear()} BHARAT PULSE News Network. All Rights Reserved.
             </p>
 
             {/* Social Icons in Small Gray Squares */}
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5" aria-label="पादलेख सोशल मीडिया लिंक्स">
               <a
                 href="https://facebook.com"
                 target="_blank"
                 rel="noreferrer"
                 className="flex h-6 w-6 items-center justify-center rounded bg-neutral-800 text-gray-300 hover:bg-[#1877F2] hover:text-white transition-colors"
+                aria-label="Bharat Pulse on Facebook"
+                title="Facebook"
               >
-                <span className="font-bold text-[11px]">f</span>
+                <span className="font-bold text-[11px]" aria-hidden="true">f</span>
               </a>
               <a
                 href="https://twitter.com"
                 target="_blank"
                 rel="noreferrer"
                 className="flex h-6 w-6 items-center justify-center rounded bg-neutral-800 text-gray-300 hover:bg-black hover:text-white transition-colors"
+                aria-label="Bharat Pulse on X"
+                title="X"
               >
-                <span className="font-bold text-[10px]">𝕏</span>
+                <span className="font-bold text-[10px]" aria-hidden="true">𝕏</span>
               </a>
               <a
                 href="https://youtube.com"
                 target="_blank"
                 rel="noreferrer"
                 className="flex h-6 w-6 items-center justify-center rounded bg-neutral-800 text-gray-300 hover:bg-red-600 hover:text-white transition-colors"
+                aria-label="Bharat Pulse on YouTube"
+                title="YouTube"
               >
-                <span className="font-bold text-[10px]">▶</span>
+                <span className="font-bold text-[10px]" aria-hidden="true">▶</span>
               </a>
             </div>
           </div>

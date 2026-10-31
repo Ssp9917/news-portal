@@ -495,7 +495,7 @@ export default async function NewsDetailsPage({ params }: NewsDetailsPageProps) 
             {/* Compact Newsletter Widget */}
             <div className="rounded-2xl border border-blue-500/20 bg-gradient-to-b from-blue-950/40 to-slate-950/60 p-5 backdrop-blur-md text-white">
               <Sparkles className="h-5 w-5 text-cyan-400 mb-2" />
-              <h4 className="text-sm font-bold">Never Miss a Briefing</h4>
+              <h4 className="text-sm font-bold">Never Miss Bharat Pulse Updates</h4>
               <p className="mt-1 text-xs text-slate-400 leading-relaxed">
                 Get the top verified stories delivered to your inbox every morning.
               </p>

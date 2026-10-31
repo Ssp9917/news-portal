@@ -12,7 +12,7 @@ interface NewsletterBoxProps {
 
 export default function NewsletterBox({
   locale,
-  title = "डेली ब्रीफिंग न्यूज़लेटर (Top Briefing Dispatch)",
+  title = "दैनिक न्यूज़लेटर (Bharat Pulse Dispatch)",
   subtitle = "हर सुबह सबसे महत्वपूर्ण राष्ट्रीय व वैश्विक समाचारों का सार सीधे अपने इनबॉक्स में पाएं।",
 }: NewsletterBoxProps) {
   const [email, setEmail] = useState("");
@@ -90,6 +90,7 @@ export default function NewsletterBox({
             <input
               type="email"
               required
+              aria-label={locale === "hi" ? "अपना ईमेल पता दर्ज करें" : "Enter your email address"}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder={locale === "hi" ? "अपना ईमेल पता दर्ज करें..." : "Enter your email address..."}
@@ -98,6 +99,7 @@ export default function NewsletterBox({
             <button
               type="submit"
               disabled={loading}
+              aria-label={loading ? "Subscribing..." : locale === "hi" ? "न्यूज़लेटर की सदस्यता लें" : "Subscribe to newsletter"}
               className="w-full sm:w-auto shrink-0 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 px-6 py-3 text-xs font-bold text-white shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:scale-[1.02] transition-all disabled:opacity-50"
             >
               <span>{loading ? "Subscribing..." : locale === "hi" ? "जुड़ें" : "Subscribe"}</span>

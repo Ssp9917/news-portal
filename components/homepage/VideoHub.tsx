@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Play, X, Mail, Send, CheckCircle2 } from "lucide-react";
+import { Play, X, Mail, CheckCircle2 } from "lucide-react";
 import type { Locale } from "@/lib/i18n/config";
 import { getLocalizedTitle } from "@/lib/i18n/news-fields";
 
@@ -65,17 +65,21 @@ export default function VideoHub({ news, locale }: VideoHubProps) {
 
   return (
     <>
-      <section className="mb-10">
+      <section className="mb-10" aria-label="वीडियो समाचार और न्यूज़लेटर">
         {/* Header: Vertical Red Bar + Title + "सभी देखें →" */}
         <div className="mb-4 flex items-center justify-between border-b border-gray-200 dark:border-neutral-800 pb-2">
           <div className="flex items-center gap-2">
-            <span className="h-5 w-1 rounded-full bg-[#c61d23]" />
+            <span className="h-5 w-1 rounded-full bg-[#c61d23]" aria-hidden="true" />
             <h2 className="text-lg font-black text-gray-900 dark:text-white">
               वीडियो अपडेट्स
             </h2>
           </div>
 
-          <button className="text-xs font-semibold text-gray-500 hover:text-[#c61d23] dark:text-neutral-400 dark:hover:text-red-400 transition-colors">
+          <button
+            type="button"
+            aria-label="सभी वीडियो समाचार देखें"
+            className="text-xs font-semibold text-gray-700 hover:text-[#c61d23] dark:text-neutral-300 dark:hover:text-red-400 transition-colors cursor-pointer"
+          >
             सभी देखें →
           </button>
         </div>
@@ -89,8 +93,17 @@ export default function VideoHub({ news, locale }: VideoHubProps) {
             return (
               <div
                 key={item._id}
+                role="button"
+                tabIndex={0}
+                aria-label={`वीडियो चलाएं: ${headline}`}
                 onClick={() => setActiveVideoId(item.ytId)}
-                className="group flex flex-col justify-between overflow-hidden rounded-xl border border-gray-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-3 shadow-sm cursor-pointer transition-all hover:shadow-md hover:border-gray-300"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    setActiveVideoId(item.ytId);
+                  }
+                }}
+                className="group flex flex-col justify-between overflow-hidden rounded-xl border border-gray-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-3 shadow-sm cursor-pointer transition-all hover:shadow-md hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#c61d23]"
               >
                 <div>
                   {/* Thumbnail with centered circular red play button */}
@@ -101,6 +114,10 @@ export default function VideoHub({ news, locale }: VideoHubProps) {
                         `https://img.youtube.com/vi/${item.ytId}/hqdefault.jpg`
                       }
                       alt={headline}
+                      width={480}
+                      height={270}
+                      loading="lazy"
+                      decoding="async"
                       className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-black/25 group-hover:bg-black/10 transition-colors" />
@@ -131,7 +148,7 @@ export default function VideoHub({ news, locale }: VideoHubProps) {
                   </h3>
                 </div>
 
-                <div className="mt-2 text-[10px] text-gray-400">
+                <div className="mt-2 text-[10px] text-gray-600 dark:text-neutral-400 font-medium">
                   {item.date}
                 </div>
               </div>
@@ -146,33 +163,39 @@ export default function VideoHub({ news, locale }: VideoHubProps) {
                   न्यूज़लेटर सब्सक्राइब करें
                 </h3>
                 <div className="flex h-6 w-6 items-center justify-center rounded-full bg-pink-100 dark:bg-pink-950/40 text-pink-600">
-                  <Mail className="h-3.5 w-3.5" />
+                  <Mail className="h-3.5 w-3.5" aria-hidden="true" />
                 </div>
               </div>
 
-              <p className="text-[11px] text-gray-500 dark:text-neutral-400 leading-relaxed mb-4">
+              <p className="text-[11px] text-gray-700 dark:text-neutral-300 leading-relaxed mb-4">
                 हर सुबह ताज़ा समाचार सीधे अपने इनबॉक्स में पाएं।
               </p>
 
               {subscribed ? (
-                <div className="flex items-center gap-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 p-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
-                  <CheckCircle2 className="h-4 w-4" />
+                <div className="flex items-center gap-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 p-2 text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+                  <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
                   <span>सब्सक्राइब हो गया!</span>
                 </div>
               ) : (
                 <form onSubmit={handleSubscribe} className="space-y-3">
+                  <label htmlFor="video-hub-email" className="sr-only">
+                    ईमेल पता दर्ज करें
+                  </label>
                   <input
+                    id="video-hub-email"
                     type="email"
                     required
+                    aria-label="ईमेल पता दर्ज करें"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="अपना ईमेल दर्ज करें"
-                    className="w-full rounded-lg border border-gray-200 dark:border-neutral-700 bg-gray-50 dark:bg-neutral-800 px-3 py-2 text-xs text-gray-900 dark:text-white placeholder-gray-400 focus:border-[#c61d23] focus:outline-none"
+                    className="w-full rounded-lg border border-gray-300 dark:border-neutral-700 bg-gray-50 dark:bg-neutral-800 px-3 py-2 text-xs text-gray-900 dark:text-white placeholder-gray-500 focus:border-[#c61d23] focus:outline-none"
                   />
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full rounded-lg bg-[#c61d23] py-2 text-xs font-bold text-white shadow hover:bg-[#a8161b] transition-colors"
+                    aria-label={loading ? "लोड हो रहा है..." : "न्यूज़लेटर सब्सक्राइब करें"}
+                    className="w-full rounded-lg bg-[#c61d23] py-2 text-xs font-bold text-white shadow hover:bg-[#a8161b] transition-colors cursor-pointer"
                   >
                     {loading ? "लोड हो रहा है..." : "सब्सक्राइब करें →"}
                   </button>
@@ -180,7 +203,7 @@ export default function VideoHub({ news, locale }: VideoHubProps) {
               )}
             </div>
 
-            <span className="text-[9px] text-gray-400 mt-2 block text-center">
+            <span className="text-[9px] text-gray-600 dark:text-neutral-400 mt-2 block text-center font-medium">
               गोपनीयता नीति सुरक्षित • कभी भी अनसब्सक्राइब करें
             </span>
           </div>
@@ -192,6 +215,9 @@ export default function VideoHub({ news, locale }: VideoHubProps) {
         <div
           onClick={() => setActiveVideoId(null)}
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md"
+          role="dialog"
+          aria-modal="true"
+          aria-label="वीडियो प्लेयर"
         >
           <div
             onClick={(e) => e.stopPropagation()}
@@ -199,7 +225,8 @@ export default function VideoHub({ news, locale }: VideoHubProps) {
           >
             <button
               onClick={() => setActiveVideoId(null)}
-              className="absolute top-2 right-2 z-10 rounded-full bg-black/70 p-1.5 text-white hover:bg-red-600 transition-colors"
+              aria-label="वीडियो बंद करें"
+              className="absolute top-2 right-2 z-10 rounded-full bg-black/70 p-2 text-white hover:bg-red-600 transition-colors cursor-pointer"
             >
               <X className="h-5 w-5" />
             </button>

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Flame, Clock, Calendar } from "lucide-react";
+import { Flame } from "lucide-react";
 import { withLocale } from "@/lib/i18n/paths";
 import type { Locale } from "@/lib/i18n/config";
 import {
@@ -56,13 +56,14 @@ export default function HeroSpotlight({ news, locale }: HeroSpotlightProps) {
   );
 
   return (
-    <section className="mb-10">
+    <section className="mb-10" aria-label="मुख्य और ट्रेंडिंग समाचार">
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
         {/* ── Left Column (approx 50% / 6 cols): Large Featured Card ── */}
         <div className="lg:col-span-6">
           <Link
             href={featuredHref}
-            className="group relative block overflow-hidden rounded-xl border border-gray-200 dark:border-neutral-800 bg-neutral-900 shadow-sm"
+            className="group relative block overflow-hidden rounded-xl border border-gray-200 dark:border-neutral-800 bg-neutral-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#c61d23]"
+            aria-label={`विशेष समाचार: ${featuredTitle}`}
           >
             <div className="relative aspect-[16/11] w-full overflow-hidden bg-neutral-800">
               <img
@@ -71,6 +72,11 @@ export default function HeroSpotlight({ news, locale }: HeroSpotlightProps) {
                   "https://images.unsplash.com/photo-1514565131-fce0801e5785?w=1000&auto=format&fit=crop&q=80"
                 }
                 alt={featuredTitle}
+                width={800}
+                height={550}
+                loading="eager"
+                decoding="async"
+                fetchPriority="high"
                 className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent" />
@@ -96,18 +102,18 @@ export default function HeroSpotlight({ news, locale }: HeroSpotlightProps) {
                   {featuredTitle}
                 </h2>
 
-                <div className="mt-2.5 flex items-center gap-3 text-[11px] text-gray-300">
+                <div className="mt-2.5 flex items-center gap-3 text-[11px] text-gray-200 font-medium">
                   <span>📅 {featured.date}</span>
                   <span>•</span>
                   <span>{featured.author || "संवाददाता"}</span>
                 </div>
 
-                {/* Carousel Dots */}
-                <div className="mt-4 flex items-center justify-center gap-1.5">
+                {/* Indicators */}
+                <div className="mt-4 flex items-center justify-center gap-1.5" aria-hidden="true">
                   <span className="h-2 w-2 rounded-full bg-red-600" />
-                  <span className="h-1.5 w-1.5 rounded-full bg-white/50" />
-                  <span className="h-1.5 w-1.5 rounded-full bg-white/50" />
-                  <span className="h-1.5 w-1.5 rounded-full bg-white/50" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-white/60" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-white/60" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-white/60" />
                 </div>
               </div>
             </div>
@@ -125,18 +131,23 @@ export default function HeroSpotlight({ news, locale }: HeroSpotlightProps) {
               <Link
                 key={item._id}
                 href={href}
-                className="group flex items-start gap-3 rounded-lg border border-gray-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-2.5 shadow-sm transition-all hover:shadow-md hover:border-gray-300"
+                className="group flex items-start gap-3 rounded-lg border border-gray-100 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-2.5 shadow-sm transition-all hover:shadow-md hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#c61d23]"
+                aria-label={title}
               >
                 <div className="relative h-16 w-20 shrink-0 overflow-hidden rounded-md bg-gray-200 dark:bg-neutral-800">
                   <img
                     src={item.image || "https://placehold.co/160x120"}
                     alt={title}
+                    width={160}
+                    height={120}
+                    loading="lazy"
+                    decoding="async"
                     className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                   />
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <h4
+                  <h3
                     className="text-xs font-bold leading-snug text-gray-900 dark:text-neutral-100 line-clamp-2 group-hover:text-[#c61d23] transition-colors"
                     style={{
                       fontFamily:
@@ -146,8 +157,8 @@ export default function HeroSpotlight({ news, locale }: HeroSpotlightProps) {
                     }}
                   >
                     {title}
-                  </h4>
-                  <div className="mt-1 text-[10px] text-gray-400">
+                  </h3>
+                  <div className="mt-1 text-[10px] text-gray-600 dark:text-neutral-400 font-medium">
                     {item.date}
                   </div>
                 </div>
@@ -161,10 +172,10 @@ export default function HeroSpotlight({ news, locale }: HeroSpotlightProps) {
           <div className="h-full rounded-xl border border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-4 shadow-sm flex flex-col justify-between">
             {/* Box Header */}
             <div className="mb-3 flex items-center gap-1.5 border-b border-gray-100 dark:border-neutral-800 pb-2.5">
-              <Flame className="h-4 w-4 fill-current text-[#c61d23]" />
-              <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-wider">
+              <Flame className="h-4 w-4 fill-current text-[#c61d23]" aria-hidden="true" />
+              <h2 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-wider">
                 ट्रेंडिंग न्यूज़
-              </h3>
+              </h2>
             </div>
 
             {/* 5 Numbered Items */}
@@ -181,7 +192,8 @@ export default function HeroSpotlight({ news, locale }: HeroSpotlightProps) {
                   <Link
                     key={item._id}
                     href={href}
-                    className="group flex items-start gap-2.5 py-2.5 transition-colors"
+                    className="group flex items-start gap-2.5 py-2.5 transition-colors focus:outline-none focus:ring-2 focus:ring-[#c61d23] rounded"
+                    aria-label={`ट्रेंडिंग #${idx + 1}: ${title}`}
                   >
                     {/* Red Number Circle */}
                     <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#c61d23] text-[10px] font-bold text-white shadow-sm mt-0.5">
@@ -189,7 +201,7 @@ export default function HeroSpotlight({ news, locale }: HeroSpotlightProps) {
                     </span>
 
                     <div className="flex-1 min-w-0">
-                      <h4
+                      <h3
                         className="text-xs font-bold leading-snug text-gray-900 dark:text-neutral-100 line-clamp-2 group-hover:text-[#c61d23] transition-colors"
                         style={{
                           fontFamily:
@@ -199,8 +211,8 @@ export default function HeroSpotlight({ news, locale }: HeroSpotlightProps) {
                         }}
                       >
                         {title}
-                      </h4>
-                      <span className="mt-0.5 block text-[10px] text-gray-400">
+                      </h3>
+                      <span className="mt-0.5 block text-[10px] text-gray-600 dark:text-neutral-400 font-medium">
                         {item.date}
                       </span>
                     </div>

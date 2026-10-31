@@ -24,14 +24,14 @@ export async function POST(req: Request) {
         await existing.save();
       }
       return NextResponse.json({
-        message: "You are already subscribed to our Daily Briefing!",
+        message: "You are already subscribed to Bharat Pulse Daily!",
       });
     }
 
     await Newsletter.create({ email: cleanEmail });
 
     return NextResponse.json(
-      { message: "Successfully subscribed! Welcome to the Daily Briefing." },
+      { message: "Successfully subscribed! Welcome to Bharat Pulse." },
       { status: 201 }
     );
   } catch (error: unknown) {

@@ -18,6 +18,7 @@ const notoSans = Noto_Sans({
   subsets: ["latin"],
   variable: "--font-noto-sans",
   display: "swap",
+  preload: true,
 });
 
 const notoSansDevanagari = Noto_Sans_Devanagari({
@@ -25,6 +26,7 @@ const notoSansDevanagari = Noto_Sans_Devanagari({
   weight: ["400", "500", "600", "700"],
   variable: "--font-noto-sans-devanagari",
   display: "swap",
+  preload: true,
 });
 
 const notoSerifDevanagari = Noto_Serif_Devanagari({
@@ -32,12 +34,13 @@ const notoSerifDevanagari = Noto_Serif_Devanagari({
   weight: ["400", "600", "700"],
   variable: "--font-noto-serif-devanagari",
   display: "swap",
+  preload: false,
 });
 
 const SITE_URL = getSiteUrl();
 
 export async function generateMetadata(): Promise<Metadata> {
-  let siteName = "Daily Latest News | राष्ट्र की आवाज़";
+  let siteName = "Bharat Pulse | भारत पल्स - राष्ट्रीय व अंतरराष्ट्रीय समाचार";
   let siteDescription =
     "भारत और विश्व की ताज़ा ख़बरें, राजनीति, खेल, तकनीक, व्यापार और विश्लेषण। निष्पक्ष पत्रकारिता का विश्वसनीय मंच।";
   let defaultOg = `${SITE_URL}/og-default.png`;
@@ -62,12 +65,13 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     description: siteDescription,
     keywords: [
+      "Bharat Pulse",
+      "भारत पल्स",
       "news",
       "latest news",
       "breaking news",
       "Hindi news",
       "India news",
-      "Top Briefing",
       "politics",
       "sports",
       "business",
@@ -75,9 +79,9 @@ export async function generateMetadata(): Promise<Metadata> {
       "entertainment",
       "daily news",
     ],
-    authors: [{ name: siteName, url: SITE_URL }],
-    creator: siteName,
-    publisher: siteName,
+    authors: [{ name: "Bharat Pulse Media Network", url: SITE_URL }],
+    creator: "Bharat Pulse Media Network",
+    publisher: "Bharat Pulse Media Network",
     icons: {
       icon: "/favicon.svg",
       shortcut: "/favicon.svg",
@@ -140,8 +144,8 @@ export default async function RootLayout({
   const locale = raw && isLocale(raw) ? raw : defaultLocale;
 
   let initialTheme = null;
-  let gaId = "G-LDC5ZD9S53";
-  let gtmId = "GTM-WDNCFQS5";
+  let gaId = "";
+  let gtmId = "";
 
   try {
     await connectDB();
@@ -156,22 +160,60 @@ export default async function RootLayout({
 
   const websiteJsonLd = {
     "@context": "https://schema.org",
-    "@type": "WebSite",
-    name: "Daily Latest News",
-    url: SITE_URL,
-    potentialAction: {
-      "@type": "SearchAction",
-      target: {
-        "@type": "EntryPoint",
-        urlTemplate: `${SITE_URL}/${locale}/search?q={search_term_string}`,
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": `${SITE_URL}/#website`,
+        name: "Bharat Pulse",
+        alternateName: "भारत पल्स",
+        url: SITE_URL,
+        description: "भारत और विश्व की ताज़ा ख़बरें, राजनीति, खेल, तकनीक, व्यापार और विश्लेषण।",
+        publisher: {
+          "@id": `${SITE_URL}/#organization`,
+        },
+        potentialAction: {
+          "@type": "SearchAction",
+          target: {
+            "@type": "EntryPoint",
+            urlTemplate: `${SITE_URL}/${locale}/search?q={search_term_string}`,
+          },
+          "query-input": "required name=search_term_string",
+        },
       },
-      "query-input": "required name=search_term_string",
-    },
+      {
+        "@type": "NewsMediaOrganization",
+        "@id": `${SITE_URL}/#organization`,
+        name: "Bharat Pulse Media Network",
+        alternateName: "भारत पल्स",
+        url: SITE_URL,
+        logo: {
+          "@type": "ImageObject",
+          url: `${SITE_URL}/favicon.svg`,
+          width: 512,
+          height: 512,
+        },
+        sameAs: [
+          "https://facebook.com",
+          "https://twitter.com",
+          "https://youtube.com",
+          "https://instagram.com",
+        ],
+        contactPoint: {
+          "@type": "ContactPoint",
+          email: "editorial@bharatpulse.in",
+          contactType: "newsroom",
+        },
+      },
+    ],
   };
 
   return (
     <html lang={locale} suppressHydrationWarning>
       <head>
+        <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://images.unsplash.com" />
+        <link rel="preconnect" href="https://placehold.co" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://placehold.co" />
         <ThemeStyleInjector initialTheme={initialTheme} />
         <Script
           id="website-jsonld"
@@ -184,11 +226,19 @@ export default async function RootLayout({
         className={`${notoSans.variable} ${notoSansDevanagari.variable} ${notoSerifDevanagari.variable} min-h-screen antialiased`}
         suppressHydrationWarning
       >
+        {/* Skip to Main Content Link for Keyboard and Screen Reader Accessibility */}
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:px-4 focus:py-2 focus:bg-[#c61d23] focus:text-white focus:rounded-md focus:shadow-xl focus:outline-none focus:ring-2 focus:ring-white font-bold text-xs"
+        >
+          मुख्य सामग्री पर जाएं (Skip to main content)
+        </a>
+
         <AppThemeProvider>
           <StoreProvider>{children}</StoreProvider>
         </AppThemeProvider>
-        {gaId && <GoogleAnalytics gaId={gaId} />}
-        {gtmId && <GoogleTagManager gtmId={gtmId} />}
+        {process.env.NODE_ENV === "production" && gaId && <GoogleAnalytics gaId={gaId} />}
+        {process.env.NODE_ENV === "production" && gtmId && <GoogleTagManager gtmId={gtmId} />}
       </body>
     </html>
   );

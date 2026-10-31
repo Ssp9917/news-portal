@@ -10,14 +10,13 @@ export async function GET() {
   try {
     await connectDB();
 
-    let siteTitle = "Daily Latest News";
+    let siteTitle = "Bharat Pulse | भारत पल्स";
     const seo = await GlobalSeo.findOne().sort({ updatedAt: -1 });
     if (seo?.siteTitle) siteTitle = seo.siteTitle;
 
     const siteUrl = getSiteUrl();
 
     // Google News sitemap standard: articles published within the last 48 hours
-    // For demonstration if no articles in 48h, grab latest 15 published articles
     const twoDaysAgo = new Date(Date.now() - 48 * 60 * 60 * 1000);
     let articles = await News.find({
       published: true,
@@ -30,7 +29,7 @@ export async function GET() {
       // Fallback to recent published articles
       articles = await News.find({ published: true })
         .sort({ createdAt: -1 })
-        .limit(15);
+        .limit(20);
     }
 
     const xml = `<?xml version="1.0" encoding="UTF-8"?>

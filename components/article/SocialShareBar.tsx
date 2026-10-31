@@ -52,6 +52,7 @@ export default function SocialShareBar({
         href={whatsappUrl}
         target="_blank"
         rel="noreferrer"
+        aria-label="Share on WhatsApp"
         title="Share on WhatsApp"
         className="flex items-center gap-1.5 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-3 py-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white transition-all shadow-sm"
       >
@@ -64,6 +65,7 @@ export default function SocialShareBar({
         href={telegramUrl}
         target="_blank"
         rel="noreferrer"
+        aria-label="Share on Telegram"
         title="Share on Telegram"
         className="flex items-center gap-1.5 rounded-xl border border-sky-500/20 bg-sky-500/10 px-3 py-1.5 text-xs font-bold text-sky-600 dark:text-sky-400 hover:bg-sky-500 hover:text-white transition-all shadow-sm"
       >
@@ -76,6 +78,7 @@ export default function SocialShareBar({
         href={twitterUrl}
         target="_blank"
         rel="noreferrer"
+        aria-label="Share on X"
         title="Share on X"
         className="flex items-center gap-1.5 rounded-xl border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-white/5 px-3 py-1.5 text-xs font-bold text-slate-800 dark:text-white hover:bg-black hover:text-white transition-all shadow-sm"
       >
@@ -90,6 +93,7 @@ export default function SocialShareBar({
         href={facebookUrl}
         target="_blank"
         rel="noreferrer"
+        aria-label="Share on Facebook"
         title="Share on Facebook"
         className="flex items-center gap-1.5 rounded-xl border border-blue-500/20 bg-blue-500/10 px-3 py-1.5 text-xs font-bold text-blue-600 dark:text-blue-400 hover:bg-blue-600 hover:text-white transition-all shadow-sm"
       >
@@ -101,8 +105,9 @@ export default function SocialShareBar({
       {/* Copy Link */}
       <button
         onClick={copyToClipboard}
+        aria-label="Copy article link to clipboard"
         title="Copy article link"
-        className="flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 px-3 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10 transition-all shadow-sm"
+        className="flex items-center gap-1.5 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 px-3 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10 transition-all shadow-sm cursor-pointer"
       >
         {copied ? (
           <>

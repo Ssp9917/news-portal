@@ -28,7 +28,7 @@ export interface IGlobalSeo extends Document {
 
 const GlobalSeoSchema: Schema = new Schema(
   {
-    siteTitle: { type: String, default: "Daily Latest News | राष्ट्र की आवाज़" },
+    siteTitle: { type: String, default: "Bharat Pulse | भारत पल्स - राष्ट्रीय व अंतरराष्ट्रीय समाचार" },
     siteTagline: { type: String, default: "राष्ट्र की निष्पक्ष और निर्भीक आवाज़" },
     metaDescription: {
       type: String,
@@ -37,12 +37,12 @@ const GlobalSeoSchema: Schema = new Schema(
     },
     defaultOgImage: { type: String, default: "/og-default.png" },
     faviconUrl: { type: String, default: "/favicon.svg" },
-    canonicalBaseUrl: { type: String, default: "http://localhost:3000" },
+    canonicalBaseUrl: { type: String, default: "https://bharatpulse.in" },
     googleVerification: { type: String, default: "" },
     bingVerification: { type: String, default: "" },
-    googleAnalyticsId: { type: String, default: "G-LDC5ZD9S53" },
-    googleTagManagerId: { type: String, default: "GTM-WDNCFQS5" },
-    organizationName: { type: String, default: "Daily Latest News Network" },
+    googleAnalyticsId: { type: String, default: "" },
+    googleTagManagerId: { type: String, default: "" },
+    organizationName: { type: String, default: "Bharat Pulse Media Network" },
     organizationLogo: { type: String, default: "/favicon.svg" },
     socialLinks: {
       twitter: { type: String, default: "https://twitter.com" },

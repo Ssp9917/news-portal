@@ -21,6 +21,7 @@ export default function BrandLogo({
   return (
     <Link
       href={withLocale(locale, "/")}
+      aria-label="Bharat Pulse - भारत पल्स होम"
       className={`group flex items-center gap-2.5 transition-all select-none ${className}`}
     >
       {/* ── Geometric Emblem ── */}
