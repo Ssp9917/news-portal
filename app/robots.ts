@@ -6,21 +6,18 @@ export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
       {
-        // Allow major crawlers full access to public content
         userAgent: ["Googlebot", "Bingbot", "Slurp", "DuckDuckBot"],
-        allow: ["/bn/", "/en/", "/hi/"],
+        allow: ["/hi/", "/en/", "/bn/"],
         disallow: ["/admin/", "/api/", "/_next/", "/fonts/"],
       },
       {
-        // Block all other bots from admin / API
         userAgent: "*",
         allow: "/",
         disallow: ["/admin/", "/api/", "/_next/static/"],
         crawlDelay: 2,
       },
     ],
-    sitemap: `${base}/sitemap.xml`,
+    sitemap: [`${base}/sitemap.xml`, `${base}/news-sitemap.xml`],
     host: base,
   };
 }
-

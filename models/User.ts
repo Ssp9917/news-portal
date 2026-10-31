@@ -4,10 +4,19 @@ export interface IUser extends Document {
   email: string;
   name?: string;
   password?: string;
-  role: "super_admin" | "admin" | "editor" | "viewer";
+  role:
+    | "super_admin"
+    | "admin"
+    | "editor"
+    | "author"
+    | "seo_manager"
+    | "media_manager"
+    | "viewer";
   tenantId?: string;
   isActive: boolean;
   createdBy?: string;
+  avatar?: string;
+  bio?: string;
   createdAt: Date;
 }
 
@@ -31,7 +40,15 @@ const UserSchema: Schema<IUser> = new Schema(
     },
     role: {
       type: String,
-      enum: ["super_admin", "admin", "editor", "viewer"],
+      enum: [
+        "super_admin",
+        "admin",
+        "editor",
+        "author",
+        "seo_manager",
+        "media_manager",
+        "viewer",
+      ],
       default: "admin",
     },
     tenantId: {
@@ -45,6 +62,14 @@ const UserSchema: Schema<IUser> = new Schema(
     createdBy: {
       type: String,
       default: null,
+    },
+    avatar: {
+      type: String,
+      default: "",
+    },
+    bio: {
+      type: String,
+      default: "",
     },
   },
   { timestamps: true }

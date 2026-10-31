@@ -1,471 +1,643 @@
-// app/admin/add/page.tsx
 "use client";
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Save, ChevronDown } from "lucide-react";
-import { ADMIN_NEWS_CATEGORIES } from "@/lib/admin-categories";
-import MediaUpload from "../../../components/admin/Mediaupload";
+import {
+  ArrowLeft,
+  Save,
+  Sparkles,
+  Zap,
+  Flame,
+  SearchCode,
+  Image as ImageIcon,
+  CheckCircle2,
+  Clock,
+  Eye,
+  Layers,
+  HelpCircle,
+} from "lucide-react";
+import MediaUpload from "@/components/admin/Mediaupload";
 
-const DRAFT_KEY = "news-draft";
-
-// ── Reusable section wrapper ───────────────────────────────────────────────────
-function Section({ title, children, badge }: {
-  title: string;
-  children: React.ReactNode;
-  badge?: string;
-}) {
-  return (
-    <div className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
-      <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
-        <h3 className="text-sm font-bold tracking-tight text-gray-900">{title}</h3>
-        {badge && (
-          <span className="rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-red-500">
-            {badge}
-          </span>
-        )}
-      </div>
-      <div className="p-6">{children}</div>
-    </div>
-  );
-}
-
-// ── Collapsible i18n field ─────────────────────────────────────────────────────
-function I18nField({ label, name, value, onChange, rows = 3, isTextarea = false }: {
-  label: string;
-  name: string;
-  value: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-  rows?: number;
-  isTextarea?: boolean;
-}) {
-  const [open, setOpen] = useState(false);
-  const hasValue = value.trim().length > 0;
-
-  return (
-    <div className="rounded-xl border border-gray-100 bg-gray-50">
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center justify-between px-4 py-2.5 text-left"
-      >
-        <span className="flex items-center gap-2 text-xs font-semibold text-gray-500">
-          <span className={`h-1.5 w-1.5 rounded-full ${hasValue ? "bg-green-400" : "bg-gray-300"}`} />
-          {label}
-        </span>
-        <ChevronDown className={`h-3.5 w-3.5 text-gray-400 transition-transform ${open ? "rotate-180" : ""}`} />
-      </button>
-      {open && (
-        <div className="border-t border-gray-100 px-4 pb-4 pt-3">
-          {isTextarea ? (
-            <textarea
-              name={name}
-              value={value}
-              onChange={onChange}
-              rows={rows}
-              className="w-full resize-y rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
-            />
-          ) : (
-            <input
-              type="text"
-              name={name}
-              value={value}
-              onChange={onChange}
-              className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
-            />
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ── Toggle switch ──────────────────────────────────────────────────────────────
-function Toggle({ name, checked, onChange, label, description, accent = "blue" }: {
-  name: string;
-  checked: boolean;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  label: string;
-  description?: string;
-  accent?: "blue" | "red";
-}) {
-  const colors = {
-    blue: "peer-checked:bg-blue-500 peer-focus:ring-blue-200",
-    red: "peer-checked:bg-red-500 peer-focus:ring-red-200",
-  };
-
-  return (
-    <div className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
-      <div>
-        <p className="text-sm font-semibold text-gray-800">{label}</p>
-        {description && <p className="text-xs text-gray-400">{description}</p>}
-      </div>
-      <label className="relative inline-flex cursor-pointer items-center">
-        <input
-          type="checkbox"
-          name={name}
-          checked={checked}
-          onChange={onChange}
-          className="peer sr-only"
-        />
-        <div className={`relative h-6 w-11 rounded-full bg-gray-200 transition-colors after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow-sm after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-focus:outline-none peer-focus:ring-2 ${colors[accent]}`} />
-      </label>
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-export default function AddNews() {
+export default function AddNewsPage() {
   const router = useRouter();
+  const [categories, setCategories] = useState<{ name: string; slug: string; color?: string }[]>([]);
   const [loading, setLoading] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
   const [formData, setFormData] = useState({
     title: "",
-    titleI18nEn: "",
-    titleI18nHi: "",
+    titleI18n: { hi: "", en: "", bn: "" },
+    subtitle: "",
+    subtitleI18n: { hi: "", en: "", bn: "" },
     slug: "",
+    category: "",
+    categoryColor: "bg-blue-600",
     excerpt: "",
-    excerptI18nEn: "",
-    excerptI18nHi: "",
+    excerptI18n: { hi: "", en: "", bn: "" },
     content: "",
-    contentI18nEn: "",
-    contentI18nHi: "",
-    category: "বিশ্ব",
-    author: "Admin",
+    contentI18n: { hi: "", en: "", bn: "" },
+    author: "Editorial Team",
+    authorBio: "Senior Investigative Journalist & Chief Reporter",
+    date: new Date().toLocaleDateString("hi-IN", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    }),
     image: "",
+    imageCaption: "",
+    imageCredit: "Daily Latest News",
     isBreaking: false,
-    published: false,
-    tags: "",
-    gallery: [] as string[],
+    isFeatured: false,
+    isTrending: false,
+    isEditorPick: false,
+    published: true,
     videoUrl: "",
+    tags: "",
+    readingTime: 3,
+    seo: {
+      title: "",
+      description: "",
+      focusKeyword: "",
+      canonicalUrl: "",
+      ogImage: "",
+      noIndex: false,
+    },
   });
 
-  // Load draft
   useEffect(() => {
-    const saved = localStorage.getItem(DRAFT_KEY);
-    if (saved) {
-      try { setFormData((p) => ({ ...p, ...JSON.parse(saved) })); } catch { /* ignore */ }
+    const token = localStorage.getItem("admin_token");
+    if (!token) {
+      router.push("/admin");
+      return;
     }
-  }, []);
 
-  // Auto-save draft
-  useEffect(() => {
-    const id = setTimeout(() => localStorage.setItem(DRAFT_KEY, JSON.stringify(formData)), 500);
-    return () => clearTimeout(id);
-  }, [formData]);
+    // Fetch categories
+    fetch("/api/admin/categories")
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setCategories(data);
+          setFormData((prev) => ({
+            ...prev,
+            category: prev.category || data[0].name,
+            categoryColor: data[0].color || "bg-blue-600",
+          }));
+        }
+      })
+      .catch(() => {});
+  }, [router]);
 
-  const slugify = (text: string) =>
-    text.toLowerCase().trim()
-      .replace(/[^\w\s-]/g, "")
-      .replace(/[\s_-]+/g, "-")
-      .replace(/^-+|-+$/g, "");
+  // Auto generate slug from title
+  const generateSlug = () => {
+    if (!formData.title) return;
+    const clean = formData.title
+      .trim()
+      .toLowerCase()
+      .replace(/[^\w\s\u0900-\u097F-]/g, "")
+      .replace(/\s+/g, "-")
+      .slice(0, 60);
+    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+    setFormData((prev) => ({ ...prev, slug: `${clean}-${randomSuffix}` }));
+  };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target;
-    setFormData((prev) => {
-      const updated = {
-        ...prev,
-        [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
-      };
-      if (name === "title" && !prev.slug) updated.slug = slugify(value);
-      return updated;
-    });
+  // Recalculate reading time on content change
+  const handleContentChange = (contentVal: string) => {
+    const plainWords = contentVal.replace(/<[^>]*>/g, "").trim().split(/\s+/).length;
+    const estimatedMinutes = Math.max(1, Math.ceil(plainWords / 180));
+    setFormData((prev) => ({
+      ...prev,
+      content: contentVal,
+      readingTime: estimatedMinutes,
+    }));
+  };
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3500);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.title || !formData.content) {
+      alert("Title and content are required.");
+      return;
+    }
+
     setLoading(true);
-
-    const date = new Date().toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" });
-    const selectedCat = ADMIN_NEWS_CATEGORIES.find((c) => c.value === formData.category);
-    const categoryColor = selectedCat?.color ?? "bg-gray-500";
-
     try {
+      const token = localStorage.getItem("admin_token");
+      const tagsArray = formData.tags
+        ? formData.tags.split(",").map((t) => t.trim().replace(/^#/, "")).filter(Boolean)
+        : [];
+
+      const payload = {
+        ...formData,
+        tags: tagsArray,
+        titleI18n: {
+          ...formData.titleI18n,
+          hi: formData.titleI18n.hi || formData.title,
+        },
+        excerptI18n: {
+          ...formData.excerptI18n,
+          hi: formData.excerptI18n.hi || formData.excerpt,
+        },
+        contentI18n: {
+          ...formData.contentI18n,
+          hi: formData.contentI18n.hi || formData.content,
+        },
+      };
+
       const res = await fetch("/api/news", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: formData.title,
-          titleI18n: { en: formData.titleI18nEn, hi: formData.titleI18nHi },
-          slug: formData.slug,
-          excerpt: formData.excerpt,
-          excerptI18n: { en: formData.excerptI18nEn, hi: formData.excerptI18nHi },
-          content: formData.content,
-          contentI18n: { en: formData.contentI18nEn, hi: formData.contentI18nHi },
-          category: formData.category,
-          author: formData.author,
-          image: formData.image,
-          isBreaking: formData.isBreaking,
-          published: formData.published,
-          videoUrl: formData.videoUrl,
-          date,
-          categoryColor,
-          tags: formData.tags.split(",").map((t) => t.trim()).filter(Boolean),
-          gallery: formData.gallery.filter((u) => u.trim()),
-        }),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
       });
 
       if (res.ok) {
-        localStorage.removeItem(DRAFT_KEY);
-        router.push("/admin/dashboard");
+        showToast("Article published successfully!");
+        setTimeout(() => router.push("/admin/dashboard"), 1200);
       } else {
-        const data = await res.json();
-        alert(data.error || "Failed to add article");
+        const err = await res.json();
+        alert(err.error || "Failed to create article");
       }
     } catch {
-      alert("Failed to add article");
+      alert("Network error creating article");
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <div className="min-h-screen bg-[#f8f9fb] pb-24 text-gray-900" style={{ fontFamily: "Georgia, serif" }}>
+  // SEO Scores
+  const effectiveSeoTitle = formData.seo.title || formData.title;
+  const effectiveSeoDesc = formData.seo.description || formData.excerpt;
+  const titleLength = effectiveSeoTitle.length;
+  const descLength = effectiveSeoDesc.length;
 
-      {/* ── Sticky top nav ── */}
-      <nav className="sticky top-0 z-20 border-b border-gray-200/80 bg-white/90 px-4 py-3 backdrop-blur-md md:px-6">
-        <div className="mx-auto flex max-w-[1400px] items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link href="/admin/dashboard"
-              className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium text-gray-500 transition hover:bg-gray-100 hover:text-gray-900">
-              <ArrowLeft className="h-4 w-4" />
-              <span className="hidden sm:inline">Back</span>
-            </Link>
-            <div className="h-5 w-px bg-gray-200" />
-            <h1 className="text-base font-bold text-gray-900 md:text-lg">New Article</h1>
-            <span className="hidden rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-600 sm:inline">
-              Draft
-            </span>
-          </div>
+  return (
+    <div className="min-h-screen bg-[#070b14] text-slate-100 p-4 lg:p-8">
+      {toastMessage && (
+        <div className="fixed top-6 right-6 z-50 flex items-center gap-2 rounded-xl border border-blue-500/30 bg-blue-950/90 px-4 py-3 text-sm text-white shadow-2xl backdrop-blur-xl animate-in fade-in">
+          <CheckCircle2 className="h-5 w-5 text-blue-400" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
+      {/* Top Header */}
+      <div className="mx-auto max-w-6xl mb-6 flex items-center justify-between">
+        <Link
+          href="/admin/dashboard"
+          className="flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-white transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          <span>Back to Dashboard</span>
+        </Link>
+
+        <div className="flex items-center gap-3">
           <button
             type="button"
+            onClick={() => setFormData({ ...formData, published: false })}
+            className={`rounded-xl border px-4 py-2 text-xs font-semibold transition-all ${
+              !formData.published
+                ? "border-amber-500/40 bg-amber-500/20 text-amber-300"
+                : "border-white/10 bg-white/5 text-slate-400 hover:bg-white/10"
+            }`}
+          >
+            Draft Mode
+          </button>
+          <button
             onClick={handleSubmit}
             disabled={loading}
-            className="flex items-center gap-2 rounded-xl bg-gray-900 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-black disabled:opacity-50"
+            className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 px-5 py-2.5 text-xs font-bold text-white shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:scale-[1.02] transition-all disabled:opacity-50"
           >
-            {loading ? (
-              <><svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                <circle className="opacity-20" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-              </svg>Saving…</>
-            ) : (
-              <><Save className="h-4 w-4" /><span>Publish</span></>
-            )}
+            <Save className="h-4 w-4" />
+            <span>{loading ? "Publishing..." : "Publish Article"}</span>
           </button>
         </div>
-      </nav>
+      </div>
 
-      {/* ── Body ── */}
-      <div className="mx-auto w-full max-w-[1400px] px-4 py-6 md:px-6 md:py-8">
-        <form onSubmit={handleSubmit} className="grid grid-cols-12 gap-5 lg:gap-7">
+      <form onSubmit={handleSubmit} className="mx-auto max-w-6xl grid grid-cols-1 gap-8 lg:grid-cols-12">
+        {/* Left Column: Editorial Content (8 cols) */}
+        <div className="space-y-6 lg:col-span-8">
+          {/* Main Headline */}
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
+              Primary Headline (Hindi) *
+            </label>
+            <input
+              type="text"
+              required
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              placeholder="संसद का शीतकालीन सत्र: देश में AI और अर्थव्यवस्था पर बड़ा फैसला"
+              className="w-full rounded-xl border border-white/10 bg-slate-900 px-4 py-3 text-lg font-bold text-white placeholder-slate-500 focus:border-blue-500 focus:outline-none"
+            />
 
-          {/* ── LEFT: Main content ── */}
-          <div className="col-span-12 space-y-5 lg:col-span-8">
-
-            {/* Title */}
-            <Section title="Headline">
-              <textarea
-                name="title"
-                value={formData.title}
-                onChange={handleChange}
-                rows={2}
-                placeholder="Write a compelling headline…"
-                className="w-full resize-none rounded-xl border border-gray-200 px-4 py-3 text-xl font-bold leading-snug outline-none transition placeholder:font-normal placeholder:text-gray-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
-                required
-              />
-              {/* URL slug */}
-              <div className="mt-3 flex items-center overflow-hidden rounded-xl border border-gray-200 bg-gray-50 text-sm">
-                <span className="select-none border-r border-gray-200 bg-gray-100 px-3 py-2.5 text-gray-400 text-xs whitespace-nowrap">/news/</span>
-                <input
-                  type="text"
-                  name="slug"
-                  value={formData.slug}
-                  onChange={(e) => setFormData((p) => ({ ...p, slug: slugify(e.target.value) }))}
-                  placeholder="url-slug"
-                  className="flex-1 bg-transparent px-3 py-2.5 text-gray-600 outline-none"
-                />
-              </div>
-              {/* i18n */}
-              <div className="mt-3 space-y-2">
-                <I18nField label="Title in English" name="titleI18nEn" value={formData.titleI18nEn} onChange={handleChange} />
-                <I18nField label="Title in Hindi (हिन्दी)" name="titleI18nHi" value={formData.titleI18nHi} onChange={handleChange} />
-              </div>
-            </Section>
-
-            {/* Excerpt */}
-            <Section title="Excerpt / Summary" badge="required">
-              <textarea
-                name="excerpt"
-                value={formData.excerpt}
-                onChange={handleChange}
-                rows={3}
-                placeholder="A short summary shown in article cards and SEO…"
-                className="w-full resize-y rounded-xl border border-gray-200 px-4 py-3 text-sm leading-relaxed outline-none transition placeholder:text-gray-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
-                required
-              />
-              <div className="mt-3 space-y-2">
-                <I18nField label="Excerpt in English" name="excerptI18nEn" value={formData.excerptI18nEn} onChange={handleChange} isTextarea rows={3} />
-                <I18nField label="Excerpt in Hindi (हिन्दी)" name="excerptI18nHi" value={formData.excerptI18nHi} onChange={handleChange} isTextarea rows={3} />
-              </div>
-            </Section>
-
-            {/* Content */}
-            <Section title="Full Article (HTML)" badge="required">
-              <textarea
-                name="content"
-                value={formData.content}
-                onChange={handleChange}
-                rows={16}
-                placeholder="<p>Write your full article here. HTML tags supported — p, h2, h3, ul, li, strong, em, blockquote…</p>"
-                className="w-full resize-y rounded-xl border border-gray-200 px-4 py-3 font-mono text-sm leading-relaxed outline-none transition placeholder:font-sans placeholder:text-gray-400 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
-                required
-              />
-              <div className="mt-3 space-y-2">
-                <I18nField label="Full article in English (HTML)" name="contentI18nEn" value={formData.contentI18nEn} onChange={handleChange} isTextarea rows={10} />
-                <I18nField label="Full article in Hindi (HTML)" name="contentI18nHi" value={formData.contentI18nHi} onChange={handleChange} isTextarea rows={10} />
-              </div>
-              <p className="mt-2 text-xs text-gray-400">
-                Supports: &lt;p&gt; &lt;h2&gt; &lt;h3&gt; &lt;ul&gt; &lt;li&gt; &lt;strong&gt; &lt;em&gt; &lt;blockquote&gt; &lt;a&gt;
-              </p>
-            </Section>
-
-          </div>
-
-          {/* ── RIGHT: Sidebar ── */}
-          <div className="col-span-12 space-y-5 lg:col-span-4">
-
-            {/* Publishing */}
-            <Section title="Publishing">
-              <div className="space-y-3">
-                <Toggle name="published" checked={formData.published} onChange={handleChange}
-                  label="Published" description="Visible to readers" accent="blue" />
-                <Toggle name="isBreaking" checked={formData.isBreaking} onChange={handleChange}
-                  label="Breaking News" description="Shown in breaking banner" accent="red" />
-              </div>
-            </Section>
-
-            {/* Category */}
-            <Section title="Category">
-              <div className="relative">
-                <select
-                  name="category"
-                  value={formData.category}
-                  onChange={handleChange}
-                  className="w-full cursor-pointer appearance-none rounded-xl border border-gray-200 bg-white px-4 py-2.5 pr-9 text-sm text-gray-700 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
-                >
-                  {ADMIN_NEWS_CATEGORIES.map((cat) => (
-                    <option key={cat.value} value={cat.value}>{cat.label}</option>
-                  ))}
-                </select>
-                <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-              </div>
-            </Section>
-
-            {/* Featured image */}
-            <Section title="Featured Image">
-              <MediaUpload
-                label=""
-                value={formData.image}
-                onChange={(url) => setFormData((p) => ({ ...p, image: url }))}
-                type="image"
-                placeholder="https://… or upload"
-              />
-            </Section>
-
-            {/* Video */}
-            <Section title="Video">
-              <MediaUpload
-                label=""
-                value={formData.videoUrl}
-                onChange={(url) => setFormData((p) => ({ ...p, videoUrl: url }))}
-                type="video"
-                placeholder="YouTube URL or upload video"
-              />
-            </Section>
-
-            {/* Author */}
-            <Section title="Author">
-              <div className="relative">
-                <svg className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
-                  fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-                <input
-                  type="text"
-                  name="author"
-                  value={formData.author}
-                  onChange={handleChange}
-                  className="w-full rounded-xl border border-gray-200 py-2.5 pl-10 pr-4 text-sm text-gray-700 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
-                />
-              </div>
-            </Section>
-
-            {/* Tags */}
-            <Section title="Tags">
+            {/* Subtitle */}
+            <div className="mt-4">
+              <label className="block text-xs font-semibold text-slate-400 mb-1">
+                Subtitle / Secondary Deck
+              </label>
               <input
                 type="text"
-                name="tags"
-                value={formData.tags}
-                onChange={handleChange}
-                placeholder="politics, cricket, tech"
-                className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm text-gray-700 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                value={formData.subtitle}
+                onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })}
+                placeholder="विपक्ष ने उठाए महंगाई पर सवाल, वित्त मंत्री ने पेश किए विकास दर के नए आंकड़े"
+                className="w-full rounded-xl border border-white/10 bg-slate-900 px-3.5 py-2 text-sm text-slate-200 placeholder-slate-500 focus:border-blue-500 focus:outline-none"
               />
-              <p className="mt-1.5 text-xs text-gray-400">Separate with commas</p>
-              {formData.tags && (
-                <div className="mt-2 flex flex-wrap gap-1.5">
-                  {formData.tags.split(",").map((t) => t.trim()).filter(Boolean).map((tag) => (
-                    <span key={tag} className="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-600">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </Section>
+            </div>
 
-            {/* Gallery */}
-            <Section title="Image Gallery">
-              <div className="space-y-2.5">
-                {formData.gallery.map((url, i) => (
-                  <div key={i} className="flex gap-2">
-                    <input
-                      type="text"
-                      value={url}
-                      onChange={(e) => {
-                        const g = [...formData.gallery];
-                        g[i] = e.target.value;
-                        setFormData((p) => ({ ...p, gallery: g }));
-                      }}
-                      placeholder={`Image URL ${i + 1}`}
-                      className="flex-1 rounded-xl border border-gray-200 px-3 py-2 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setFormData((p) => ({ ...p, gallery: p.gallery.filter((_, j) => j !== i) }))}
-                      className="rounded-xl p-2 text-gray-400 transition hover:bg-red-50 hover:text-red-500"
-                    >
-                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </div>
-                ))}
-                <button
-                  type="button"
-                  onClick={() => setFormData((p) => ({ ...p, gallery: [...p.gallery, ""] }))}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-200 py-2.5 text-xs font-semibold text-gray-400 transition hover:border-blue-300 hover:text-blue-500"
-                >
-                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
-                  Add image URL
-                </button>
-              </div>
-            </Section>
-
+            {/* URL Slug Generator */}
+            <div className="mt-4 flex items-center gap-2">
+              <span className="text-xs font-mono text-slate-500">/news/</span>
+              <input
+                type="text"
+                required
+                value={formData.slug}
+                onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                placeholder="parliament-winter-session-2026"
+                className="flex-1 rounded-lg border border-white/10 bg-slate-900 px-3 py-1.5 font-mono text-xs text-white focus:border-blue-500 focus:outline-none"
+              />
+              <button
+                type="button"
+                onClick={generateSlug}
+                className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:bg-white/10"
+              >
+                Auto Generate
+              </button>
+            </div>
           </div>
-        </form>
-      </div>
+
+          {/* Excerpt */}
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
+              Editorial Excerpt / Lead Summary *
+            </label>
+            <textarea
+              rows={3}
+              required
+              value={formData.excerpt}
+              onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
+              placeholder="नई दिल्ली। संसद के शीतकालीन सत्र का पहला दिन हंगामेदार रहा..."
+              className="w-full rounded-xl border border-white/10 bg-slate-900 px-4 py-3 text-sm text-slate-200 placeholder-slate-500 focus:border-blue-500 focus:outline-none"
+            />
+          </div>
+
+          {/* Full Rich Article Content */}
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl">
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-300">
+                Article Body Content (Supports HTML / Formatted Text) *
+              </label>
+              <span className="flex items-center gap-1 font-mono text-xs text-blue-400">
+                <Clock className="h-3.5 w-3.5" />
+                ~{formData.readingTime} min read
+              </span>
+            </div>
+
+            {/* Quick Formatting Helpers */}
+            <div className="mb-2 flex flex-wrap gap-1.5 p-1 rounded-lg bg-slate-900/60 border border-white/5 text-xs text-slate-300">
+              <button
+                type="button"
+                onClick={() =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    content: prev.content + "\n<h2>Subheading</h2>\n",
+                  }))
+                }
+                className="px-2 py-1 hover:bg-white/10 rounded"
+              >
+                H2 Heading
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    content: prev.content + "\n<h3>Section Subhead</h3>\n",
+                  }))
+                }
+                className="px-2 py-1 hover:bg-white/10 rounded"
+              >
+                H3 Heading
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    content: prev.content + "\n<p>Your paragraph text here...</p>\n",
+                  }))
+                }
+                className="px-2 py-1 hover:bg-white/10 rounded"
+              >
+                Paragraph
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    content:
+                      prev.content +
+                      "\n<blockquote class='border-l-4 border-blue-500 pl-4 italic text-slate-300'>Important quote here...</blockquote>\n",
+                  }))
+                }
+                className="px-2 py-1 hover:bg-white/10 rounded"
+              >
+                Blockquote
+              </button>
+            </div>
+
+            <textarea
+              rows={12}
+              required
+              value={formData.content}
+              onChange={(e) => handleContentChange(e.target.value)}
+              placeholder="<p>पहला पैराग्राफ...</p>"
+              className="w-full rounded-xl border border-white/10 bg-slate-900 p-4 font-mono text-xs leading-relaxed text-slate-200 placeholder-slate-500 focus:border-blue-500 focus:outline-none"
+            />
+          </div>
+
+          {/* Multilingual Support (English & Bangla titles) */}
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl space-y-4">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300">
+              Multilingual Translations (Optional)
+            </h3>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                  English Headline
+                </label>
+                <input
+                  type="text"
+                  value={formData.titleI18n.en || ""}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      titleI18n: { ...formData.titleI18n, en: e.target.value },
+                    })
+                  }
+                  placeholder="Parliament Winter Session..."
+                  className="w-full rounded-lg border border-white/10 bg-slate-900 px-3 py-2 text-xs text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                  Bangla Headline
+                </label>
+                <input
+                  type="text"
+                  value={formData.titleI18n.bn || ""}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      titleI18n: { ...formData.titleI18n, bn: e.target.value },
+                    })
+                  }
+                  placeholder="সংসদের শীতকালীন অধিবেশন..."
+                  className="w-full rounded-lg border border-white/10 bg-slate-900 px-3 py-2 text-xs text-white"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: Metadata, Featured, SEO (4 cols) */}
+        <div className="space-y-6 lg:col-span-4">
+          {/* Category & Status */}
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl space-y-4 text-xs">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300">
+              Beat & Classification
+            </h3>
+
+            <div>
+              <label className="mb-1 block font-semibold text-slate-400">
+                News Category *
+              </label>
+              <select
+                required
+                value={formData.category}
+                onChange={(e) => {
+                  const sel = categories.find((c) => c.name === e.target.value);
+                  setFormData({
+                    ...formData,
+                    category: e.target.value,
+                    categoryColor: sel?.color || "bg-blue-600",
+                  });
+                }}
+                className="w-full rounded-xl border border-white/10 bg-slate-900 px-3 py-2.5 text-white focus:border-blue-500 focus:outline-none"
+              >
+                {categories.map((c) => (
+                  <option key={c.slug} value={c.name}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="mb-1 block font-semibold text-slate-400">
+                Byline / Author Name
+              </label>
+              <input
+                type="text"
+                value={formData.author}
+                onChange={(e) => setFormData({ ...formData, author: e.target.value })}
+                className="w-full rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-white"
+              />
+            </div>
+
+            <div>
+              <label className="mb-1 block font-semibold text-slate-400">
+                Topic Tags (comma-separated)
+              </label>
+              <input
+                type="text"
+                value={formData.tags}
+                onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+                placeholder="संसद, राजनीति, अर्थव्यवस्था"
+                className="w-full rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-white"
+              />
+            </div>
+          </div>
+
+          {/* Editorial Display Toggles */}
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl space-y-3 text-xs">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300 mb-2">
+              Editorial Promotion
+            </h3>
+
+            <label className="flex items-center justify-between p-2 rounded-lg bg-white/5 cursor-pointer">
+              <span className="flex items-center gap-2 font-semibold text-white">
+                <Sparkles className="h-4 w-4 text-blue-400" />
+                Featured Story (Hero)
+              </span>
+              <input
+                type="checkbox"
+                checked={formData.isFeatured}
+                onChange={(e) => setFormData({ ...formData, isFeatured: e.target.checked })}
+                className="rounded accent-blue-600 h-4 w-4"
+              />
+            </label>
+
+            <label className="flex items-center justify-between p-2 rounded-lg bg-white/5 cursor-pointer">
+              <span className="flex items-center gap-2 font-semibold text-white">
+                <Zap className="h-4 w-4 text-red-400" />
+                Breaking News Ticker
+              </span>
+              <input
+                type="checkbox"
+                checked={formData.isBreaking}
+                onChange={(e) => setFormData({ ...formData, isBreaking: e.target.checked })}
+                className="rounded accent-red-600 h-4 w-4"
+              />
+            </label>
+
+            <label className="flex items-center justify-between p-2 rounded-lg bg-white/5 cursor-pointer">
+              <span className="flex items-center gap-2 font-semibold text-white">
+                <Flame className="h-4 w-4 text-amber-400" />
+                Trending Spotlight
+              </span>
+              <input
+                type="checkbox"
+                checked={formData.isTrending}
+                onChange={(e) => setFormData({ ...formData, isTrending: e.target.checked })}
+                className="rounded accent-amber-600 h-4 w-4"
+              />
+            </label>
+          </div>
+
+          {/* Featured Image & Video */}
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl space-y-4 text-xs">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300">
+              Media & Video
+            </h3>
+
+            <div>
+              <label className="mb-1 block font-semibold text-slate-400">
+                Featured Image URL
+              </label>
+              <input
+                type="url"
+                value={formData.image}
+                onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                placeholder="https://images.unsplash.com/..."
+                className="w-full rounded-xl border border-white/10 bg-slate-900 px-3 py-2 font-mono text-white"
+              />
+            </div>
+
+            <div>
+              <label className="mb-1 block font-semibold text-slate-400">
+                Image Caption & Credit
+              </label>
+              <input
+                type="text"
+                value={formData.imageCaption}
+                onChange={(e) => setFormData({ ...formData, imageCaption: e.target.value })}
+                placeholder="संसद भवन के बाहर प्रेस कॉन्फ्रेंस (फोटो: पीटीआई)"
+                className="w-full rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-white"
+              />
+            </div>
+
+            <div>
+              <label className="mb-1 block font-semibold text-slate-400">
+                Video URL (YouTube Embed)
+              </label>
+              <input
+                type="url"
+                value={formData.videoUrl}
+                onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
+                placeholder="https://www.youtube.com/watch?v=..."
+                className="w-full rounded-xl border border-white/10 bg-slate-900 px-3 py-2 font-mono text-white"
+              />
+            </div>
+          </div>
+
+          {/* In-Editor Real-Time SEO Analyzer */}
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl space-y-4 text-xs">
+            <div className="flex items-center justify-between border-b border-white/10 pb-2">
+              <h3 className="flex items-center gap-1.5 font-bold uppercase tracking-wider text-white">
+                <SearchCode className="h-4 w-4 text-cyan-400" />
+                <span>SEO Snippet Analyzer</span>
+              </h3>
+            </div>
+
+            <div>
+              <label className="mb-1 flex items-center justify-between font-semibold text-slate-400">
+                <span>Custom SEO Meta Title</span>
+                <span
+                  className={`font-mono text-[10px] ${
+                    titleLength >= 40 && titleLength <= 65
+                      ? "text-emerald-400"
+                      : "text-amber-400"
+                  }`}
+                >
+                  {titleLength}/60 chars
+                </span>
+              </label>
+              <input
+                type="text"
+                value={formData.seo.title}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    seo: { ...formData.seo, title: e.target.value },
+                  })
+                }
+                placeholder="Leave blank to use main headline"
+                className="w-full rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-white"
+              />
+            </div>
+
+            <div>
+              <label className="mb-1 flex items-center justify-between font-semibold text-slate-400">
+                <span>SEO Meta Description</span>
+                <span
+                  className={`font-mono text-[10px] ${
+                    descLength >= 120 && descLength <= 160
+                      ? "text-emerald-400"
+                      : "text-amber-400"
+                  }`}
+                >
+                  {descLength}/160 chars
+                </span>
+              </label>
+              <textarea
+                rows={2}
+                value={formData.seo.description}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    seo: { ...formData.seo, description: e.target.value },
+                  })
+                }
+                placeholder="Leave blank to use excerpt"
+                className="w-full rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-white"
+              />
+            </div>
+
+            {/* Google SERP Live Simulation */}
+            <div className="rounded-xl border border-white/10 bg-slate-950 p-3 text-left">
+              <span className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold block mb-1">
+                Google Search Result Preview
+              </span>
+              <div className="text-[11px] text-[#202124] dark:text-[#bdc1c6] truncate">
+                https://dailylatestnews.in/news/{formData.slug || "slug-here"}
+              </div>
+              <h5 className="text-xs font-medium text-[#1a0dab] dark:text-[#8ab4f8] hover:underline line-clamp-1 mt-0.5">
+                {effectiveSeoTitle || "Article Headline Will Appear Here"}
+              </h5>
+              <p className="text-[11px] text-[#4d5156] dark:text-[#bdc1c6] line-clamp-2 mt-0.5">
+                {effectiveSeoDesc || "Article description preview on Google search engine."}
+              </p>
+            </div>
+          </div>
+        </div>
+      </form>
     </div>
   );
 }

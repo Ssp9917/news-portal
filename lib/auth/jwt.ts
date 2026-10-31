@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import type { Role } from "./rbac";
 
 const JWT_SECRET = process.env.JWT_SECRET || "change_this_secret_in_production";
 const JWT_EXPIRES_IN = "7d";
@@ -6,7 +7,7 @@ const JWT_EXPIRES_IN = "7d";
 export interface JWTPayload {
   userId: string;
   email: string;
-  role: "super_admin" | "admin" | "editor" | "viewer";
+  role: Role;
   tenantId?: string | null;
   name?: string;
 }

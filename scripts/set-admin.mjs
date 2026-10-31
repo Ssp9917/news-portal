@@ -60,7 +60,7 @@ const userSchema = new mongoose.Schema(
   {
     email: { type: String, required: true, unique: true },
     password: { type: String },
-    role: { type: String, enum: ["admin", "user"], default: "user" },
+    role: { type: String, enum: ["admin", "user", "super_admin"], default: "user" },
   },
   { timestamps: true }
 );
@@ -78,13 +78,14 @@ async function main() {
       $set: {
         email,
         password: hash,
-        role: "admin",
+        role: "super_admin",
+        isActive: true
       },
     },
     { upsert: true, new: true }
   );
 
-  console.log(`Admin OK: ${email} (password updated, role admin)`);
+  console.log(`Super Admin OK: ${email} (password updated, role super_admin)`);
   await mongoose.disconnect();
 }
 

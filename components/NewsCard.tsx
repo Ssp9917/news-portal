@@ -7,12 +7,13 @@ import { useI18n } from "@/components/providers/i18n-provider";
 import { withLocale } from "@/lib/i18n/paths";
 import { getLocalizedExcerpt, getLocalizedTitle } from "@/lib/i18n/news-fields";
 import type { Locale } from "@/lib/i18n/config";
+import { Clock, User } from "lucide-react";
 
 interface NewsCardProps {
   _id: string;
   slug?: string;
   category: string;
-  categoryColor: string;
+  categoryColor?: string;
   title: string;
   excerpt: string;
   author: string;
@@ -27,7 +28,7 @@ export default function NewsCard({
   _id,
   slug,
   category,
-  categoryColor,
+  categoryColor = "bg-blue-600",
   title,
   excerpt,
   author,
@@ -50,40 +51,49 @@ export default function NewsCard({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
+      transition={{ duration: 0.35 }}
       className="h-full"
     >
       <Link
         href={withLocale(activeLocale, `/news/${slug || _id}`)}
-        className="block h-full"
+        className="block h-full group"
       >
-        <article className="group flex h-full flex-col overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm transition-shadow hover:shadow-md dark:border-neutral-800 dark:bg-neutral-950">
-          <div className="relative h-48 w-full overflow-hidden bg-gray-200 dark:bg-neutral-900">
-            <Image
+        <article className="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200/80 dark:border-white/10 bg-white/70 dark:bg-slate-900/60 shadow-sm backdrop-blur-md transition-all duration-300 hover:border-blue-500/40 hover:bg-white dark:hover:bg-slate-800/80 hover:shadow-xl hover:-translate-y-1">
+          <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-200 dark:bg-slate-800">
+            <img
               src={image || "https://placehold.co/600x400/png"}
               alt={displayTitle}
-              fill
-              className="object-cover transition-transform duration-500 group-hover:scale-105"
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
             />
           </div>
-          <div className="flex flex-grow flex-col p-5">
+          <div className="flex flex-grow flex-col p-4 sm:p-5">
             <span
-              className={`mb-3 inline-block self-start rounded px-2 py-1 text-[10px] font-bold uppercase text-white ${categoryColor}`}
+              className={`mb-2.5 inline-block self-start rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white shadow-sm ${categoryColor}`}
             >
               {category}
             </span>
-            <h3 className="mb-3 line-clamp-3 text-lg font-bold leading-tight text-gray-900 transition-colors group-hover:text-[#D32F2F] dark:text-neutral-100">
+            <h3
+              className="mb-2 line-clamp-2 text-base font-bold leading-snug text-slate-900 transition-colors group-hover:text-blue-600 dark:text-white dark:group-hover:text-blue-400"
+              style={{
+                fontFamily:
+                  activeLocale === "hi"
+                    ? "var(--font-noto-serif-devanagari), Georgia, serif"
+                    : "Georgia, serif",
+              }}
+            >
               {displayTitle}
             </h3>
-            <p className="mb-4 line-clamp-3 flex-grow text-sm text-gray-500 dark:text-neutral-400">
+            <p className="mb-4 line-clamp-2 flex-grow text-xs leading-relaxed text-slate-500 dark:text-slate-400">
               {displayExcerpt}
             </p>
-            <div className="mt-auto flex items-center justify-between border-t border-gray-50 pt-4 text-xs text-gray-400 dark:border-neutral-800 dark:text-neutral-500">
-              <span className="font-medium text-gray-600 dark:text-neutral-300">{author}</span>
-              <span className="flex items-center gap-1">
-                <span aria-hidden="true">🕒</span>
+            <div className="mt-auto flex items-center justify-between border-t border-slate-100 dark:border-white/5 pt-3 text-[11px] text-slate-400 dark:text-slate-500 font-mono">
+              <span className="font-sans font-medium text-slate-600 dark:text-slate-300 truncate max-w-[120px]">
+                {author}
+              </span>
+              <span className="flex items-center gap-1 shrink-0">
+                <Clock className="h-3 w-3" />
                 {date}
               </span>
             </div>

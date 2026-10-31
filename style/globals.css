@@ -5,80 +5,142 @@
 @theme {
   --font-anek: var(--font-anekBangla);
   --font-noto: var(--font-noto-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-baloo: var(--font-baloo-da-2);
-  --font-galada: var(--font-galada);
-  --font-tiro: var(--font-tiro-bangla);
+  --font-hindi-sans: var(--font-noto-sans-devanagari), var(--font-noto-sans), system-ui, -apple-system, sans-serif;
+  --font-hindi-serif: var(--font-noto-serif-devanagari), Georgia, "Times New Roman", serif;
 
-  --animate-marquee: marquee 30s linear infinite;
-  --animate-shimmer: shimmer 1.6s ease-in-out infinite;
+  --animate-marquee: marquee 35s linear infinite;
+  --animate-pulse-glow: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-shimmer: shimmer 1.8s ease-in-out infinite;
 
   @keyframes marquee {
     0% {
-      transform: translateX(100%);
+      transform: translateX(0);
     }
     100% {
-      transform: translateX(-100%);
+      transform: translateX(-50%);
+    }
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.85;
+      transform: scale(1.03);
     }
   }
 
   @keyframes shimmer {
     0% {
-      background-position: -600px 0;
+      background-position: -800px 0;
     }
     100% {
-      background-position: 600px 0;
+      background-position: 800px 0;
     }
   }
 }
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --theme-primary: #c61d23;
+  --theme-secondary: #9a1418;
+  --theme-accent: #f59e0b;
+  --theme-radius: 0.75rem;
+  --theme-blur: 16px;
+  --theme-glass-opacity: 0.85;
+
+  --background: #fbfbfb;
+  --foreground: #111827;
+  --surface: #ffffff;
+  --surface-border: rgba(226, 232, 240, 0.9);
+  --glass-bg: rgba(255, 255, 255, var(--theme-glass-opacity));
+  --glass-border: rgba(226, 232, 240, 0.8);
   --shimmer-base: #e2e8f0;
   --shimmer-highlight: #f8fafc;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-anekBangla), var(--font-noto-sans), sans-serif;
-}
-
 .dark {
-  --background: #0a0a0a;
-  --foreground: #ededed;
-  --shimmer-base: #1e293b;
-  --shimmer-highlight: #334155;
+  --background: #0c0c0c;
+  --foreground: #f3f4f6;
+  --surface: #141414;
+  --surface-border: rgba(38, 38, 38, 0.9);
+  --glass-bg: rgba(20, 20, 20, var(--theme-glass-opacity));
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --shimmer-base: #1c1c1c;
+  --shimmer-highlight: #2a2a2a;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
+  font-family: var(--font-hindi-sans);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
-/* ─── Skeleton / Shimmer ──────────────────────────────── */
-.skeleton {
-  background: linear-gradient(
-    90deg,
-    var(--shimmer-base) 25%,
-    var(--shimmer-highlight) 50%,
-    var(--shimmer-base) 75%
-  );
-  background-size: 1200px 100%;
-  animation: shimmer 1.6s ease-in-out infinite;
-  border-radius: 0.375rem;
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-hindi-serif);
+  letter-spacing: -0.015em;
+  font-weight: 700;
 }
 
-.skeleton-text {
-  height: 0.875rem;
-  border-radius: 0.25rem;
+/* ─── Typography Utility Classes ────────────────────────── */
+.font-headline {
+  font-family: var(--font-noto-serif-devanagari), Georgia, "Times New Roman", serif;
+  letter-spacing: -0.015em;
+  font-weight: 700;
 }
 
-.skeleton-round {
-  border-radius: 9999px;
+.font-body {
+  font-family: var(--font-noto-sans-devanagari), var(--font-noto-sans), system-ui, sans-serif;
 }
 
-/* ─── Scrollbar ───────────────────────────────────────── */
+/* ─── Glassmorphism & Cards ─────────────────────────────── */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--theme-blur));
+  -webkit-backdrop-filter: blur(var(--theme-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--theme-radius);
+}
+
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--theme-blur));
+  -webkit-backdrop-filter: blur(var(--theme-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--theme-radius);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 25px -8px rgba(0, 0, 0, 0.12);
+}
+
+/* ─── Marquee Ticker ────────────────────────────────────── */
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 35s linear infinite;
+}
+
+.marquee-track:hover {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none;
+    overflow-x: auto;
+  }
+}
+
+/* ─── Scrollbars ────────────────────────────────────────── */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -91,12 +153,5 @@ body {
   border-radius: 9999px;
 }
 .dark ::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: #333333;
 }
-
-/* ─── Focus ring ──────────────────────────────────────── */
-*:focus-visible {
-  outline: 2px solid #D32F2F;
-  outline-offset: 2px;
-}
-

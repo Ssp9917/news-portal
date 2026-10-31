@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
-import Header from "@/components/Header";
-import Navbar from "@/components/Navbar";
+import TopBar from "@/components/TopBar";
+import PremiumHeader from "@/components/PremiumHeader";
 import NewsCard from "@/components/NewsCard";
 import Footer from "@/components/Footer";
 import connectDB from "@/lib/db";
 import News from "@/models/News";
+import Category from "@/models/Category";
 import {
   getDbCategoryFromSlug,
   categoryLabelForLocale,
@@ -14,6 +15,7 @@ import { isLocale, locales, type Locale } from "@/lib/i18n/config";
 import { getSiteUrl } from "@/lib/site-url";
 import { pickMessage } from "@/lib/i18n/pick-message";
 import { notFound } from "next/navigation";
+import { FolderTree, Sparkles } from "lucide-react";
 
 interface Props {
   params: Promise<{ locale: string; slug: string }>;
@@ -21,10 +23,18 @@ interface Props {
 
 export const dynamic = "force-dynamic";
 
-async function getNewsByDbCategory(category: string) {
+async function getNewsByDbCategory(category: string, slug: string) {
   try {
     await connectDB();
-    const news = await News.find({ category }).sort({ createdAt: -1 });
+    const news = await News.find({
+      $or: [
+        { category },
+        { category: slug },
+        { slug: new RegExp(slug, "i") },
+      ],
+      published: { $ne: false },
+    }).sort({ createdAt: -1 });
+
     return JSON.parse(JSON.stringify(news));
   } catch (error) {
     console.error("Failed to fetch news:", error);
@@ -37,8 +47,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale: raw, slug } = resolved;
   if (!isLocale(raw)) return {};
   const locale = raw as Locale;
-  const dbCategory = getDbCategoryFromSlug(slug);
-  if (!dbCategory) return {};
+  const dbCategory = getDbCategoryFromSlug(slug) || slug;
 
   const dict = await getDictionary(locale);
   const t = (key: string) => pickMessage(dict, key);
@@ -48,7 +57,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const path = `/${locale}/category/${slug}`;
 
   return {
-    title: label,
+    title: `${label} | ${dict.site?.brandTitle || "Daily Latest News"}`,
     description: `${dict.meta.defaultDescription} — ${label}`,
     alternates: {
       canonical: `${site}${path}`,
@@ -69,29 +78,48 @@ export default async function CategoryPage({ params }: Props) {
   if (!isLocale(raw)) notFound();
   const locale = raw as Locale;
 
-  const dbCategory = getDbCategoryFromSlug(slug);
-  if (!dbCategory) notFound();
-
+  const dbCategory = getDbCategoryFromSlug(slug) || slug;
   const dict = await getDictionary(locale);
   const categoryTitle = categoryLabelForLocale(dbCategory, locale, (key) =>
     pickMessage(dict, key)
   );
 
-  const newsVideoData = await getNewsByDbCategory(dbCategory);
+  const newsVideoData = await getNewsByDbCategory(dbCategory, slug);
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 transition-colors dark:bg-neutral-950 dark:text-neutral-100">
-      <Header />
-      <Navbar />
+    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] transition-colors">
+      <TopBar />
+      <PremiumHeader />
 
       <main className="container mx-auto max-w-7xl px-4 py-8">
-        <div className="mb-8 border-b border-gray-100 pb-2 dark:border-neutral-800">
-          <h1 className="-mb-3.5 inline-block border-b-4 border-[#D32F2F] pb-2 text-3xl font-bold text-[#D32F2F]">
+        {/* Category Header Banner */}
+        <div className="mb-10 rounded-3xl border border-slate-200/80 dark:border-white/10 bg-slate-50/70 dark:bg-slate-900/40 p-8 backdrop-blur-xl">
+          <div className="flex items-center gap-3 mb-2">
+            <span className="flex h-3 w-3 rounded-full bg-blue-600" />
+            <span className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400 font-mono">
+              Beat / Category Archive
+            </span>
+          </div>
+
+          <h1
+            className="text-3xl font-black text-slate-900 dark:text-white sm:text-4xl lg:text-5xl"
+            style={{
+              fontFamily:
+                locale === "hi"
+                  ? "var(--font-noto-serif-devanagari), Georgia, serif"
+                  : "Georgia, serif",
+            }}
+          >
             {categoryTitle}
           </h1>
+
+          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400 max-w-2xl">
+            {dict.meta?.defaultDescription || "ताज़ा समाचार और गहन संपादकीय विश्लेषण।"}
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+        {/* Stories Grid */}
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {newsVideoData.length > 0 ? (
             newsVideoData.map((news: Record<string, unknown>, idx: number) => (
               <NewsCard
@@ -101,12 +129,12 @@ export default async function CategoryPage({ params }: Props) {
               />
             ))
           ) : (
-            <div className="col-span-full py-20 text-center">
-              <p className="text-xl text-gray-500 dark:text-neutral-400">
-                {dict.category.emptyTitle}
+            <div className="col-span-full py-24 text-center rounded-3xl border border-dashed border-slate-200 dark:border-white/10 p-12">
+              <p className="text-lg font-bold text-slate-700 dark:text-slate-300">
+                {dict.category?.emptyTitle || "इस श्रेणी में अभी कोई खबर नहीं है।"}
               </p>
-              <p className="mt-2 text-sm text-gray-400 dark:text-neutral-500">
-                {dict.category.emptyHint}
+              <p className="mt-2 text-xs text-slate-400">
+                {dict.category?.emptyHint || "एडमिन पैनल से खबर जोड़ें।"}
               </p>
             </div>
           )}

@@ -1,5 +1,5 @@
-import Header from "@/components/Header";
-import Navbar from "@/components/Navbar";
+import TopBar from "@/components/TopBar";
+import PremiumHeader from "@/components/PremiumHeader";
 import Footer from "@/components/Footer";
 import connectDB from "@/lib/db";
 import News from "@/models/News";
@@ -8,9 +8,24 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata, ResolvingMetadata } from "next";
 import mongoose from "mongoose";
-import { User, Clock, ArrowLeft, Printer, Eye } from "lucide-react";
+import {
+  User,
+  Clock,
+  ArrowLeft,
+  Eye,
+  Calendar,
+  Share2,
+  ChevronRight,
+  Sparkles,
+  Flame,
+  ArrowRight,
+} from "lucide-react";
 
-import ShareButtons from "@/components/ShareButtons";
+import ReadingProgressBar from "@/components/article/ReadingProgressBar";
+import SocialShareBar from "@/components/article/SocialShareBar";
+import ArticleBodyContainer from "@/components/article/ArticleBodyContainer";
+import AdPlacement from "@/components/homepage/AdPlacement";
+import NewsletterBox from "@/components/homepage/NewsletterBox";
 import NewsGallery from "@/components/NewsGallery";
 import ViewCounter from "@/components/ViewCounter";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
@@ -34,17 +49,13 @@ export const dynamic = "force-dynamic";
 async function getNewsDetail(id: string) {
   try {
     await connectDB();
-
     let news = null;
-
     if (mongoose.Types.ObjectId.isValid(id)) {
-      news = await News.findById(id);
+      news = await News.findById(id).lean();
     }
-
     if (!news) {
-      news = await News.findOne({ slug: id });
+      news = await News.findOne({ slug: id }).lean();
     }
-
     if (!news) return null;
     return JSON.parse(JSON.stringify(news));
   } catch {
@@ -58,10 +69,11 @@ async function getRelatedNews(category: string, currentId: string) {
     const related = await News.find({
       category: category,
       _id: { $ne: currentId },
+      published: { $ne: false },
     })
       .sort({ createdAt: -1 })
-      .limit(3);
-
+      .limit(3)
+      .lean();
     return JSON.parse(JSON.stringify(related));
   } catch (error) {
     console.error("Error fetching related news:", error);
@@ -69,7 +81,23 @@ async function getRelatedNews(category: string, currentId: string) {
   }
 }
 
-function getYouTubeId(url: string) {
+async function getTrendingSidebar(currentId: string) {
+  try {
+    await connectDB();
+    const trending = await News.find({
+      _id: { $ne: currentId },
+      published: { $ne: false },
+    })
+      .sort({ views: -1, createdAt: -1 })
+      .limit(4)
+      .lean();
+    return JSON.parse(JSON.stringify(trending));
+  } catch {
+    return [];
+  }
+}
+
+function getYouTubeId(url?: string) {
   if (!url) return null;
   const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
   const match = url.match(regExp);
@@ -95,47 +123,45 @@ export async function generateMetadata(
   }
 
   const previousImages = (await parent).openGraph?.images || [];
-  const path = `/news/${id}`;
-  const languages = Object.fromEntries(
-    locales.map((l) => [l, `${site}/${l}${path}`])
-  ) as Record<string, string>;
+  const path = `/news/${news.slug || id}`;
+  const title = news.seo?.title || getLocalizedTitle(news, locale);
+  const description = news.seo?.description || getLocalizedExcerpt(news, locale);
+  const ogImg = news.seo?.ogImage || news.image || `${site}/og-default.png`;
 
   return {
-    title: getLocalizedTitle(news, locale),
-    description: getLocalizedExcerpt(news, locale),
+    title: `${title} | ${dict.site?.brandTitle || "Daily Latest News"}`,
+    description,
     alternates: {
       canonical: `${site}/${locale}${path}`,
-      languages,
+      languages: Object.fromEntries(
+        locales.map((l) => [l, `${site}/${l}${path}`])
+      ) as Record<string, string>,
     },
     openGraph: {
-      title: getLocalizedTitle(news, locale),
-      description: getLocalizedExcerpt(news, locale),
+      title,
+      description,
       url: `${site}/${locale}${path}`,
-      siteName: dict.site.brandTitle,
+      siteName: dict.site?.brandTitle || "Daily Latest News",
       images: [
         {
-          url: news.image || "https://placehold.co/1200x630/png?text=No+Image",
+          url: ogImg,
           width: 1200,
           height: 630,
-          alt: getLocalizedTitle(news, locale),
+          alt: title,
         },
         ...previousImages,
       ],
       type: "article",
       publishedTime: news.createdAt,
+      modifiedTime: news.updatedAt || news.createdAt,
       authors: [news.author],
-      locale:
-        locale === "bn"
-          ? "bn_BD"
-          : locale === "hi"
-            ? "hi_IN"
-            : "en_US",
+      locale: locale === "hi" ? "hi_IN" : locale === "bn" ? "bn_BD" : "en_US",
     },
     twitter: {
       card: "summary_large_image",
-      title: getLocalizedTitle(news, locale),
-      description: getLocalizedExcerpt(news, locale),
-      images: [news.image || "https://placehold.co/1200x630/png?text=No+Image"],
+      title,
+      description,
+      images: [ogImg],
     },
   };
 }
@@ -153,8 +179,13 @@ export default async function NewsDetailsPage({ params }: NewsDetailsPageProps) 
     notFound();
   }
 
-  const relatedNews = await getRelatedNews(news.category, news._id);
+  const [relatedNews, trendingSidebar] = await Promise.all([
+    getRelatedNews(news.category, news._id),
+    getTrendingSidebar(news._id),
+  ]);
+
   const title = getLocalizedTitle(news, locale);
+  const subtitle = news.subtitle || "";
   const excerpt = getLocalizedExcerpt(news, locale);
   const contentHtml = getLocalizedContent(news, locale) || `<p>${excerpt}</p>`;
 
@@ -165,215 +196,363 @@ export default async function NewsDetailsPage({ params }: NewsDetailsPageProps) 
   );
 
   const siteUrl = getSiteUrl();
-  const canonicalPath = withLocale(locale, `/news/${id}`);
+  const canonicalPath = withLocale(locale, `/news/${news.slug || id}`);
+  const currentFullUrl = `${siteUrl}${canonicalPath}`;
 
+  // Structured Data Schema for NewsArticle & BreadcrumbList
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "NewsArticle",
-    headline: title,
-    description: excerpt,
-    image: news.image ? [news.image, ...(news.gallery || [])].filter(Boolean) : undefined,
-    datePublished: news.createdAt,
-    dateModified: news.updatedAt ?? news.createdAt,
-    author: { "@type": "Person", name: news.author },
-    publisher: {
-      "@type": "Organization",
-      name: dict.site.brandTitle,
-      logo: { "@type": "ImageObject", url: `${siteUrl}/favicon.svg` },
-    },
-    mainEntityOfPage: { "@type": "WebPage", "@id": `${siteUrl}${canonicalPath}` },
-    articleSection: categoryLabel,
-    inLanguage: locale === "bn" ? "bn-BD" : locale === "hi" ? "hi-IN" : "en-US",
+    "@graph": [
+      {
+        "@type": "NewsArticle",
+        headline: title,
+        description: excerpt,
+        image: news.image ? [news.image] : [`${siteUrl}/og-default.png`],
+        datePublished: news.createdAt,
+        dateModified: news.updatedAt ?? news.createdAt,
+        author: {
+          "@type": "Person",
+          name: news.author,
+          jobTitle: news.authorBio || "Journalist",
+        },
+        publisher: {
+          "@type": "Organization",
+          name: dict.site?.brandTitle || "Daily Latest News",
+          logo: { "@type": "ImageObject", url: `${siteUrl}/favicon.svg` },
+        },
+        mainEntityOfPage: {
+          "@type": "WebPage",
+          "@id": currentFullUrl,
+        },
+        articleSection: categoryLabel,
+        inLanguage: locale === "hi" ? "hi-IN" : locale === "bn" ? "bn-BD" : "en-US",
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: locale === "hi" ? "मुखपृष्ठ" : "Home",
+            item: `${siteUrl}/${locale}`,
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: categoryLabel,
+            item: `${siteUrl}/${locale}/category/${encodeURIComponent(news.category)}`,
+          },
+          {
+            "@type": "ListItem",
+            position: 3,
+            name: title,
+            item: currentFullUrl,
+          },
+        ],
+      },
+    ],
   };
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 transition-colors dark:bg-neutral-950 dark:text-neutral-100">
+    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)] transition-colors">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <Header />
-      <Navbar />
 
-      <main className="container mx-auto max-w-5xl px-4 py-8">
-        <div className="mb-8">
+      {/* 1. Sticky Reading Progress Bar */}
+      <ReadingProgressBar />
+
+      {/* 2. Top Info Bar & Header */}
+      <TopBar />
+      <PremiumHeader />
+
+      <main className="container mx-auto max-w-7xl px-4 py-8">
+        {/* Breadcrumb Hierarchy */}
+        <nav className="mb-6 flex items-center gap-2 text-xs font-semibold text-slate-500 dark:text-slate-400">
           <Link
             href={withLocale(locale, "/")}
-            className="inline-flex items-center gap-2 text-sm font-medium text-gray-500 transition-colors hover:text-[#D32F2F] dark:text-neutral-400 dark:hover:text-red-400"
+            className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
           >
-            <ArrowLeft className="h-4 w-4" />
-            <span>{dict.article.back}</span>
+            {locale === "hi" ? "मुखपृष्ठ" : "Home"}
           </Link>
-        </div>
-
-        <div className="mb-8 max-w-4xl">
-          <span
-            className={`mb-4 inline-block rounded px-3 py-1 text-xs font-bold uppercase tracking-wider text-white ${news.categoryColor || "bg-[#D32F2F]"}`}
+          <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
+          <Link
+            href={withLocale(locale, `/category/${news.category}`)}
+            className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
           >
             {categoryLabel}
+          </Link>
+          <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
+          <span className="truncate max-w-xs text-slate-800 dark:text-slate-200">
+            {title}
           </span>
-          <h1 className="mb-6 text-3xl font-bold leading-tight md:text-5xl">
+        </nav>
+
+        {/* Article Headline Header */}
+        <header className="mb-8 max-w-4xl">
+          <div className="flex items-center gap-2 mb-4">
+            <span
+              className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider text-white shadow ${
+                news.categoryColor || "bg-blue-600"
+              }`}
+            >
+              {categoryLabel}
+            </span>
+            {news.isBreaking && (
+              <span className="rounded-full bg-red-600 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white animate-pulse">
+                BREAKING
+              </span>
+            )}
+          </div>
+
+          <h1
+            className="text-3xl font-black leading-tight text-slate-900 dark:text-white sm:text-4xl lg:text-5xl"
+            style={{
+              fontFamily:
+                locale === "hi"
+                  ? "var(--font-noto-serif-devanagari), Georgia, serif"
+                  : "Georgia, serif",
+            }}
+          >
             {title}
           </h1>
 
-          <p className="mb-6 text-xl leading-relaxed text-gray-600 dark:text-neutral-300">
-            {excerpt}
-          </p>
+          {subtitle && (
+            <p className="mt-4 text-xl font-medium leading-relaxed text-slate-600 dark:text-slate-300">
+              {subtitle}
+            </p>
+          )}
 
-          <div className="flex flex-col justify-between gap-6 border-y border-gray-100 py-4 dark:border-neutral-800 md:flex-row md:items-center">
-            <div className="flex flex-col gap-6 text-sm text-gray-500 dark:text-neutral-400 sm:flex-row sm:items-center">
-              <div className="flex items-center gap-2">
-                <User className="h-4 w-4 text-[#D32F2F]" />
-                <span className="font-medium text-gray-900 dark:text-neutral-100">
-                  {news.author}
-                </span>
+          {/* Author Byline & Social Bar */}
+          <div className="mt-6 flex flex-col gap-4 border-y border-slate-200/80 dark:border-white/10 py-4 sm:flex-row sm:items-center sm:justify-between">
+            {/* Byline Info */}
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-bold shadow-md">
+                {news.author?.[0] || "A"}
               </div>
-              <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-[#D32F2F]" />
-                <span>{news.date}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Eye className="h-4 w-4 text-[#D32F2F]" />
-                <span>
-                  {news.views ?? 0} {dict.article.views}
-                </span>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-sm text-slate-900 dark:text-white">
+                    {news.author}
+                  </span>
+                  <span className="text-slate-400">•</span>
+                  <span className="text-xs text-slate-500 dark:text-slate-400 font-mono">
+                    {news.date}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  <span className="font-mono text-cyan-600 dark:text-cyan-400">
+                    ~{news.readingTime || 3} min read
+                  </span>
+                  <span>•</span>
+                  <span className="flex items-center gap-1 font-mono">
+                    <Eye className="h-3.5 w-3.5" />
+                    {(news.views || 0).toLocaleString()} views
+                  </span>
+                </div>
               </div>
             </div>
+
             <ViewCounter id={news._id} />
 
-            <div className="flex flex-wrap items-center gap-4">
-              <Link
-                href={withLocale(locale, `/news/${id}/print`)}
-                className="group flex items-center gap-2 text-gray-500 transition-colors hover:text-[#D32F2F] dark:text-neutral-400"
-                title={dict.article.printTooltip}
-              >
-                <Printer className="h-4 w-4 transition-transform group-hover:scale-110" />
-                <span className="text-sm font-medium">{dict.article.print}</span>
-              </Link>
+            {/* Social Share Bar */}
+            <SocialShareBar title={title} url={currentFullUrl} />
+          </div>
+        </header>
 
-              <div className="hidden h-4 w-px bg-gray-300 sm:block dark:bg-neutral-600" />
+        {/* Featured Image & Video Banner */}
+        <div className="mb-10 max-w-4xl">
+          {news.videoUrl && getYouTubeId(news.videoUrl) ? (
+            <div className="relative aspect-video w-full overflow-hidden rounded-3xl bg-black shadow-2xl mb-4">
+              <iframe
+                src={`https://www.youtube.com/embed/${getYouTubeId(news.videoUrl)}`}
+                title="YouTube Video Player"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="h-full w-full border-0"
+              />
+            </div>
+          ) : (
+            <div className="relative aspect-[16/10] w-full overflow-hidden rounded-3xl border border-slate-200/80 dark:border-white/10 bg-slate-900 shadow-xl">
+              <img
+                src={news.image || "https://placehold.co/1200x800"}
+                alt={title}
+                className="h-full w-full object-cover"
+              />
+            </div>
+          )}
 
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="mr-2 text-sm text-gray-400 dark:text-neutral-500">
-                  {dict.article.share}:
+          {/* Caption & Photo Credit */}
+          {(news.imageCaption || news.imageCredit) && (
+            <div className="mt-2.5 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 px-2 italic">
+              <span>{news.imageCaption}</span>
+              {news.imageCredit && (
+                <span className="font-mono font-semibold uppercase not-italic">
+                  फोटो: {news.imageCredit}
                 </span>
-                <ShareButtons title={news.title} />
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Two-Column Layout: Article Body (8 cols) + Sticky Editorial Sidebar (4 cols) */}
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-12">
+          {/* Main Column */}
+          <div className="lg:col-span-8">
+            <ArticleBodyContainer contentHtml={contentHtml} />
+
+            {/* Tags Pills */}
+            <div className="mt-10 border-t border-slate-200/80 dark:border-white/10 pt-6">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-3">
+                Related Topics
+              </span>
+              <div className="flex flex-wrap gap-2">
+                {news.tags && news.tags.length > 0 ? (
+                  news.tags.map((tag: string, i: number) => (
+                    <span
+                      key={i}
+                      className="rounded-full border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 px-3 py-1 text-xs font-medium text-slate-700 dark:text-slate-300 hover:border-blue-500 hover:text-blue-600 transition-colors cursor-pointer"
+                    >
+                      #{tag.replace(/^#/, "")}
+                    </span>
+                  ))
+                ) : (
+                  ["#news", `#${news.category}`].map((tag, i) => (
+                    <span
+                      key={i}
+                      className="rounded-full border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 px-3 py-1 text-xs font-medium text-slate-700 dark:text-slate-300"
+                    >
+                      {tag}
+                    </span>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* Bottom Social Share */}
+            <div className="mt-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-slate-200/80 dark:border-white/10 bg-slate-50/70 dark:bg-slate-900/50 p-5 backdrop-blur-md">
+              <span className="text-xs font-bold text-slate-700 dark:text-slate-200">
+                Did you find this story informative? Share it with your network:
+              </span>
+              <SocialShareBar title={title} url={currentFullUrl} />
+            </div>
+
+            {/* Author Profile Bio Box */}
+            <div className="mt-8 flex items-start gap-4 rounded-2xl border border-slate-200/80 dark:border-white/10 bg-white/70 dark:bg-slate-900/60 p-6 backdrop-blur-md shadow-sm">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-500 text-white font-extrabold text-xl shadow-lg shadow-blue-500/25">
+                {news.author?.[0] || "A"}
+              </div>
+              <div>
+                <h4 className="text-base font-bold text-slate-900 dark:text-white">
+                  {news.author}
+                </h4>
+                <p className="mt-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+                  {news.authorBio ||
+                    "वरिष्ठ पत्रकार एवं राजनीतिक विश्लेषक। राष्ट्रीय राजनीति, संसद और नीतिगत मामलों पर स्वतंत्र और निष्पक्ष रिपोर्टिंग।"}
+                </p>
               </div>
             </div>
           </div>
-        </div>
 
-        {news.videoUrl && getYouTubeId(news.videoUrl) && (
-          <div className="relative mb-10 aspect-video w-full overflow-hidden rounded-2xl bg-black shadow-lg">
-            <iframe
-              width="100%"
-              height="100%"
-              src={`https://www.youtube.com/embed/${getYouTubeId(news.videoUrl)}`}
-              title="YouTube video player"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowFullScreen
-              className="absolute inset-0"
-            />
-          </div>
-        )}
+          {/* Sticky Sidebar */}
+          <aside className="space-y-6 lg:col-span-4">
+            {/* Sidebar Sticky Ad */}
+            <AdPlacement slot="article_sidebar" />
 
-        {(() => {
-          const allImages = [...(news.image ? [news.image] : []), ...(news.gallery || [])].filter(
-            Boolean
-          );
+            {/* Trending Reader Favorites Widget */}
+            <div className="rounded-2xl border border-slate-200/80 dark:border-white/10 bg-white/70 dark:bg-slate-900/60 p-5 backdrop-blur-md shadow-sm">
+              <div className="flex items-center gap-2 mb-4 pb-3 border-b border-slate-200/80 dark:border-white/10">
+                <Flame className="h-4 w-4 text-amber-500" />
+                <h3 className="text-sm font-bold uppercase tracking-wider text-slate-900 dark:text-white">
+                  Trending Stories
+                </h3>
+              </div>
 
-          if (allImages.length > 0) {
-            return <NewsGallery images={allImages} title={title} />;
-          }
-
-          return (
-            <div className="relative mb-10 aspect-[16/9] w-full overflow-hidden rounded-2xl bg-gray-100 shadow-sm dark:bg-neutral-900">
-              <Image
-                src="https://placehold.co/1200x800/png"
-                alt={title}
-                fill
-                className="object-cover"
-                priority
-              />
-            </div>
-          );
-        })()}
-
-        <div className="max-w-4xl">
-          <div
-            className="prose prose-lg max-w-none leading-relaxed text-gray-800 dark:prose-invert dark:text-neutral-100"
-            dangerouslySetInnerHTML={{ __html: contentHtml }}
-          />
-
-          <div className="mt-10 border-t border-gray-100 py-6 dark:border-neutral-800">
-            <div className="flex flex-wrap gap-2">
-              {news.tags && news.tags.length > 0 ? (
-                news.tags.map((tag: string, i: number) => (
-                  <span
-                    key={i}
-                    className="cursor-pointer rounded-full bg-gray-50 px-3 py-1 text-sm text-gray-600 transition-colors hover:bg-gray-100 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700"
+              <div className="space-y-4">
+                {trendingSidebar.map((item: any, i: number) => (
+                  <Link
+                    key={item._id}
+                    href={withLocale(locale, `/news/${item.slug || item._id}`)}
+                    className="group flex items-start gap-3 transition-colors"
                   >
-                    #{tag.replace(/^#/, "")}
-                  </span>
-                ))
-              ) : (
-                ["#news", `#${news.category}`].map((tag, i) => (
-                  <span
-                    key={i}
-                    className="cursor-pointer rounded-full bg-gray-50 px-3 py-1 text-sm text-gray-600 transition-colors hover:bg-gray-100 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700"
-                  >
-                    {tag}
-                  </span>
-                ))
-              )}
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-4 border-b border-gray-100 py-6 dark:border-neutral-800">
-            <span className="font-bold text-gray-900 dark:text-neutral-100">
-              {dict.article.share}:
-            </span>
-            <ShareButtons title={title} size="lg" />
-          </div>
-        </div>
-
-        {relatedNews.length > 0 && (
-          <div className="mt-16 border-t border-gray-200 pt-10 dark:border-neutral-800">
-            <h3 className="mb-8 border-l-4 border-[#D32F2F] pl-3 text-2xl font-bold">
-              {dict.article.related}
-            </h3>
-            <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-              {relatedNews.map((item: Record<string, unknown>) => (
-                <Link
-                  href={withLocale(locale, `/news/${(item.slug as string) || String(item._id)}`)}
-                  key={String(item._id)}
-                  className="group cursor-pointer"
-                >
-                  <div className="relative mb-4 aspect-[16/10] overflow-hidden rounded-lg bg-gray-200 dark:bg-neutral-800">
-                    <Image
-                      src={(item.image as string) || "https://placehold.co/600x400"}
-                      alt={String(item.title)}
-                      fill
-                      className="object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
-                  </div>
-                  <div className="mb-2 flex gap-2 text-xs text-gray-500 dark:text-neutral-400">
-                    <span className="font-bold uppercase text-[#D32F2F]">
-                      {categoryLabelForLocale(String(item.category), locale, (k) =>
-                        pickMessage(dict, k)
-                      )}
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-amber-500/15 text-xs font-mono font-bold text-amber-600 dark:text-amber-400">
+                      0{i + 1}
                     </span>
-                    <span>•</span>
-                    <span>{String(item.date)}</span>
-                  </div>
-                  <h4 className="line-clamp-3 text-lg font-bold leading-snug text-gray-900 transition-colors group-hover:text-[#D32F2F] dark:text-neutral-100">
-                    {String(item.title)}
-                  </h4>
-                </Link>
-              ))}
+                    <div className="flex-1 min-w-0">
+                      <h5 className="text-xs font-bold leading-snug text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 line-clamp-2">
+                        {getLocalizedTitle(item, locale) || item.title}
+                      </h5>
+                      <span className="text-[10px] text-slate-400 font-mono mt-0.5 block">
+                        {(item.views || 0).toLocaleString()} reads
+                      </span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
             </div>
-          </div>
+
+            {/* Compact Newsletter Widget */}
+            <div className="rounded-2xl border border-blue-500/20 bg-gradient-to-b from-blue-950/40 to-slate-950/60 p-5 backdrop-blur-md text-white">
+              <Sparkles className="h-5 w-5 text-cyan-400 mb-2" />
+              <h4 className="text-sm font-bold">Never Miss a Briefing</h4>
+              <p className="mt-1 text-xs text-slate-400 leading-relaxed">
+                Get the top verified stories delivered to your inbox every morning.
+              </p>
+              <a
+                href="#newsletter-subscribe"
+                className="mt-3 block text-center rounded-xl bg-blue-600 py-2 text-xs font-bold text-white shadow hover:bg-blue-500 transition-colors"
+              >
+                Join Free Dispatch →
+              </a>
+            </div>
+          </aside>
+        </div>
+
+        {/* Related News Grid */}
+        {relatedNews.length > 0 && (
+          <section className="mt-16 border-t border-slate-200/80 dark:border-white/10 pt-10">
+            <div className="mb-6 flex items-center justify-between">
+              <h3 className="text-2xl font-bold text-slate-900 dark:text-white">
+                {dict.article?.related || "संबंधित समाचार (Related Stories)"}
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+              {relatedNews.map((item: any) => {
+                const relatedTitle = getLocalizedTitle(item, locale) || item.title;
+                const relatedHref = withLocale(locale, `/news/${item.slug || item._id}`);
+
+                return (
+                  <Link
+                    key={item._id}
+                    href={relatedHref}
+                    className="group flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/80 dark:border-white/10 bg-white/70 dark:bg-slate-900/60 p-4 shadow-sm backdrop-blur-md transition-all hover:-translate-y-1 hover:shadow-xl hover:border-blue-500/30"
+                  >
+                    <div>
+                      <div className="relative aspect-[16/10] w-full overflow-hidden rounded-xl bg-slate-800 mb-3">
+                        <img
+                          src={item.image || "https://placehold.co/600x400"}
+                          alt={relatedTitle}
+                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                      </div>
+                      <div className="flex items-center gap-2 text-[10px] text-slate-400 mb-1.5">
+                        <span className="font-bold text-blue-600 dark:text-blue-400 uppercase">
+                          {categoryLabelForLocale(item.category, locale, (k) => pickMessage(dict, k))}
+                        </span>
+                        <span>•</span>
+                        <span>{item.date}</span>
+                      </div>
+                      <h4 className="text-sm font-bold leading-snug text-slate-900 dark:text-white line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                        {relatedTitle}
+                      </h4>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
         )}
       </main>
 

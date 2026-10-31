@@ -7,9 +7,11 @@ import * as dotenv from "dotenv";
 import { fileURLToPath } from "url";
 import path from "path";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-dotenv.config({ path: path.join(__dirname, "../.env.local") });
+import { readFileSync, existsSync } from "fs";
+import { resolve } from "path";
 
+// const __dirname = path.dirname(fileURLToPath(import.meta.url));
+// dotenv.config({ path: path.join(__dirname, "../.env.local") });
 function loadDotenv() {
   const envPath = resolve(process.cwd(), ".env");
   if (!existsSync(envPath)) return;
@@ -35,13 +37,14 @@ function loadDotenv() {
 
 loadDotenv();
 
+
 const MONGODB_URI = process.env.MONGODB_URI;
 if (!MONGODB_URI) {
   console.error("❌ MONGODB_URI not found in .env.local");
   process.exit(1);
 }
 
-const email = process.argv[2];
+const email = "sonusharma30202004@gmail.com".trim().toLowerCase();
 if (!email) {
   console.error("❌ Please provide an email: node scripts/set-super-admin.mjs <email>");
   process.exit(1);

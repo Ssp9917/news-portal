@@ -25,14 +25,23 @@ export async function POST(req: Request) {
       );
     }
 
-    if (!user.isActive) {
+    if (user.isActive === false) {
       return NextResponse.json(
         { message: "Your account has been deactivated. Contact a Super Admin." },
         { status: 403 }
       );
     }
 
-    const allowedRoles = ["super_admin", "admin", "editor", "viewer"];
+    const allowedRoles = [
+      "super_admin",
+      "admin",
+      "editor",
+      "author",
+      "seo_manager",
+      "media_manager",
+      "viewer",
+    ];
+
     if (!allowedRoles.includes(user.role)) {
       return NextResponse.json(
         { message: "Access denied. Insufficient permissions." },
@@ -56,7 +65,7 @@ export async function POST(req: Request) {
       name: user.name ?? "",
     });
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       message: "Login successful",
       token,
       user: {
@@ -67,6 +76,16 @@ export async function POST(req: Request) {
         tenantId: user.tenantId ?? null,
       },
     });
+
+    // Also set httpOnly / cookie for middleware compatibility
+    response.cookies.set("admin_token", token, {
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7,
+      sameSite: "lax",
+      httpOnly: false, // Accessible to client scripts if needed
+    });
+
+    return response;
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Unknown error";
     console.error("Admin Login Error:", error);
