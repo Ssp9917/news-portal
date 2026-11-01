@@ -387,6 +387,11 @@ export default async function NewsDetailsPage({ params }: NewsDetailsPageProps) 
               <img
                 src={news.image || "https://placehold.co/1200x800"}
                 alt={`${title} — भारत पल्स (Bharat Pulse)`}
+                width={1200}
+                height={750}
+                loading="eager"
+                decoding="async"
+                fetchPriority="high"
                 className="h-full w-full object-cover"
               />
             </div>
@@ -553,6 +558,10 @@ export default async function NewsDetailsPage({ params }: NewsDetailsPageProps) 
                         <img
                           src={item.image || "https://placehold.co/600x400"}
                           alt={`${relatedTitle} — भारत पल्स (Bharat Pulse)`}
+                          width={600}
+                          height={375}
+                          loading="lazy"
+                          decoding="async"
                           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                         />
                       </div>

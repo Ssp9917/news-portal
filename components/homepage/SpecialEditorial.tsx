@@ -89,6 +89,10 @@ export default function SpecialEditorial({
                   <img
                     src={item.image || "https://placehold.co/600x400"}
                     alt={headline}
+                    width={600}
+                    height={400}
+                    loading="lazy"
+                    decoding="async"
                     className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                   <span

@@ -17,6 +17,7 @@ import {
   MapPin,
 } from "lucide-react";
 import { POPULAR_INDIAN_CITIES } from "@/lib/location";
+import CloudinaryImageUploader from "@/components/admin/CloudinaryImageUploader";
 
 function EditNewsForm() {
   const router = useRouter();
@@ -518,15 +519,15 @@ function EditNewsForm() {
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300">
               Media & Video
             </h3>
-            <div>
-              <label className="mb-1 block font-semibold text-slate-400">Featured Image URL</label>
-              <input
-                type="url"
-                value={formData.image}
-                onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                className="w-full rounded-xl border border-white/10 bg-slate-900 px-3 py-2 font-mono text-white"
-              />
-            </div>
+            {/* Cloudinary Image Uploader & Live URL Switcher */}
+            <CloudinaryImageUploader
+              label="Featured Image (मुख्य छवि)"
+              value={formData.image}
+              onChange={(url) => setFormData({ ...formData, image: url })}
+              caption={formData.imageCaption}
+              onCaptionChange={(cap) => setFormData({ ...formData, imageCaption: cap })}
+              titleSuggestion={formData.title}
+            />
             <div>
               <label className="mb-1 block font-semibold text-slate-400">Video Embed URL</label>
               <input

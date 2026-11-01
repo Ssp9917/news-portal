@@ -19,6 +19,7 @@ import {
   MapPin,
 } from "lucide-react";
 import MediaUpload from "@/components/admin/Mediaupload";
+import CloudinaryImageUploader from "@/components/admin/CloudinaryImageUploader";
 import { POPULAR_INDIAN_CITIES } from "@/lib/location";
 
 export default function AddNewsPage() {
@@ -620,31 +621,15 @@ export default function AddNewsPage() {
               Media & Video
             </h3>
 
-            <div>
-              <label className="mb-1 block font-semibold text-slate-400">
-                Featured Image URL
-              </label>
-              <input
-                type="url"
-                value={formData.image}
-                onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                placeholder="https://images.unsplash.com/..."
-                className="w-full rounded-xl border border-white/10 bg-slate-900 px-3 py-2 font-mono text-white"
-              />
-            </div>
-
-            <div>
-              <label className="mb-1 block font-semibold text-slate-400">
-                Image Caption & Credit
-              </label>
-              <input
-                type="text"
-                value={formData.imageCaption}
-                onChange={(e) => setFormData({ ...formData, imageCaption: e.target.value })}
-                placeholder="संसद भवन के बाहर प्रेस कॉन्फ्रेंस (फोटो: पीटीआई)"
-                className="w-full rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-white"
-              />
-            </div>
+            {/* Cloudinary Image Uploader & Live URL Switcher */}
+            <CloudinaryImageUploader
+              label="Featured Image (मुख्य छवि)"
+              value={formData.image}
+              onChange={(url) => setFormData({ ...formData, image: url })}
+              caption={formData.imageCaption}
+              onCaptionChange={(cap) => setFormData({ ...formData, imageCaption: cap })}
+              titleSuggestion={formData.title}
+            />
 
             <div>
               <label className="mb-1 block font-semibold text-slate-400">

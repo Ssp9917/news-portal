@@ -6,7 +6,9 @@ const nextConfig: NextConfig = {
   compress: true,
   images: {
     formats: ["image/avif", "image/webp"],
+    minimumCacheTTL: 31536000,
     remotePatterns: [
+      { protocol: "https", hostname: "res.cloudinary.com" },
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "img.youtube.com" },
       { protocol: "https", hostname: "placehold.co" },

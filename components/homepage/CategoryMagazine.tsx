@@ -104,6 +104,10 @@ export default function CategoryMagazine({
                 <img
                   src={lead.image || "https://placehold.co/800x500"}
                   alt={lead.title}
+                  width={800}
+                  height={500}
+                  loading="lazy"
+                  decoding="async"
                   className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
               </div>
@@ -152,6 +156,10 @@ export default function CategoryMagazine({
                     <img
                       src={item.image || "https://placehold.co/240x160"}
                       alt={item.title}
+                      width={240}
+                      height={160}
+                      loading="lazy"
+                      decoding="async"
                       className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
                     />
                   </div>
@@ -194,6 +202,10 @@ export default function CategoryMagazine({
                     <img
                       src={item.image || "https://placehold.co/400x250"}
                       alt={item.title}
+                      width={400}
+                      height={250}
+                      loading="lazy"
+                      decoding="async"
                       className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                   </div>
