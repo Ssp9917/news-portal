@@ -29,20 +29,32 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
+    // 1. Strict Login Requirement for commenting
+    const auth = authenticateRequest(req);
+    if (!auth.authorized || !auth.user?.userId) {
+      return NextResponse.json(
+        {
+          message: "कृपया टिप्पणी पोस्ट करने के लिए पहले लॉगिन करें। (Login required to comment)",
+          loginRequired: true,
+        },
+        { status: 401 }
+      );
+    }
+
     await connectDB();
     const body = await req.json();
     const { articleId, articleSlug, content, authorName, authorEmail } = body;
 
-    if (!articleId || !content || !authorName || !authorEmail) {
+    if (!articleId || !content || !content.trim()) {
       return NextResponse.json(
-        { message: "टिप्पणी, नाम और ईमेल आवश्यक हैं (All fields required)" },
+        { message: "टिप्पणी की सामग्री आवश्यक है (Comment text is required)" },
         { status: 400 }
       );
     }
 
-    // Optional user authentication
-    const auth = authenticateRequest(req);
-    const authorId = auth.authorized && auth.user ? auth.user.userId : null;
+    const verifiedAuthorId = auth.user.userId;
+    const verifiedAuthorName = (auth.user.name || authorName || "Reader").trim();
+    const verifiedAuthorEmail = (auth.user.email || authorEmail || "").toLowerCase().trim();
 
     // Basic profanity / spam check
     const isSpam =
@@ -54,13 +66,19 @@ export async function POST(req: Request) {
     const newComment = await Comment.create({
       articleId,
       articleSlug: articleSlug || articleId,
-      authorId,
-      authorName: authorName.trim(),
-      authorEmail: authorEmail.toLowerCase().trim(),
+      authorId: verifiedAuthorId,
+      authorName: verifiedAuthorName,
+      authorEmail: verifiedAuthorEmail,
       content: content.trim(),
       isApproved: !isSpam, // Auto-approve clean comments; flag spam
       reported: false,
     });
+
+    // Also increment commentsCount on News
+    try {
+      const News = (await import("@/models/News")).default;
+      await News.findByIdAndUpdate(articleId, { $inc: { commentsCount: 1 } });
+    } catch {}
 
     return NextResponse.json(
       {

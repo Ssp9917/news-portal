@@ -132,12 +132,13 @@ export async function generateMetadata(
   const title = news.seo?.title || getLocalizedTitle(news, locale);
   const description = news.seo?.description || getLocalizedExcerpt(news, locale);
   const ogImg = news.seo?.ogImage || news.image || `${site}/og-default.png`;
+  const canonicalUrl = `${site}/${locale}${path}`;
 
   return {
-    title: `${title} | ${dict.site?.brandTitle || "Daily Latest News"}`,
+    title: `${title} | Bharat Pulse (भारत पल्स)`,
     description,
     alternates: {
-      canonical: `${site}/${locale}${path}`,
+      canonical: canonicalUrl,
       languages: Object.fromEntries(
         locales.map((l) => [l, `${site}/${l}${path}`])
       ) as Record<string, string>,
@@ -145,21 +146,23 @@ export async function generateMetadata(
     openGraph: {
       title,
       description,
-      url: `${site}/${locale}${path}`,
-      siteName: dict.site?.brandTitle || "Daily Latest News",
+      url: canonicalUrl,
+      siteName: "Bharat Pulse | भारत पल्स",
       images: [
         {
           url: ogImg,
           width: 1200,
           height: 630,
-          alt: title,
+          alt: `${title} — Bharat Pulse`,
         },
         ...previousImages,
       ],
       type: "article",
       publishedTime: news.createdAt,
       modifiedTime: news.updatedAt || news.createdAt,
-      authors: [news.author],
+      authors: [news.author || "Bharat Pulse Bureau"],
+      section: news.category || "समाचार",
+      tags: news.tags || [],
       locale: locale === "hi" ? "hi_IN" : locale === "bn" ? "bn_BD" : "en_US",
     },
     twitter: {
@@ -167,6 +170,21 @@ export async function generateMetadata(
       title,
       description,
       images: [ogImg],
+      creator: "@BharatPulse",
+      site: "@BharatPulse",
+    },
+    other: {
+      // App Links & Mobile Deeplinking Spec
+      "al:android:url": `bharatpulse://news/${news.slug || id}`,
+      "al:android:package": "in.bharatpulse.app",
+      "al:android:app_name": "Bharat Pulse News",
+      "al:ios:url": `bharatpulse://news/${news.slug || id}`,
+      "al:ios:app_name": "Bharat Pulse",
+      "al:web:url": canonicalUrl,
+      // Article Rich Graph
+      "article:publisher": "https://facebook.com/bharatpulse",
+      "article:section": news.category || "National",
+      "article:published_time": new Date(news.createdAt).toISOString(),
     },
   };
 }

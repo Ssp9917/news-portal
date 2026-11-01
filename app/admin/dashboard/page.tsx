@@ -27,6 +27,9 @@ import {
   Zap,
   Bell,
   RefreshCw,
+  Heart,
+  MessageSquare,
+  Vote,
 } from "lucide-react";
 import type { Role } from "@/lib/auth/rbac";
 import { hasPermission } from "@/lib/auth/rbac";
@@ -441,62 +444,88 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Quick Management Shortcuts */}
-        <div className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        <div className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8">
           <Link
             href="/admin/users"
-            className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3 hover:border-red-500/40 hover:bg-red-950/20 transition-all"
+            className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/5 p-3 hover:border-red-500/40 hover:bg-red-950/20 transition-all"
           >
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-600/20 text-red-400 shrink-0">
               <Users className="h-4 w-4" />
             </div>
             <div className="min-w-0">
-              <p className="text-xs font-bold text-white truncate">Users & Readers</p>
-              <p className="text-[10px] text-slate-400 truncate">Manage Directory</p>
+              <p className="text-xs font-bold text-white truncate">Readers</p>
+              <p className="text-[10px] text-slate-400 truncate">Directory</p>
+            </div>
+          </Link>
+
+          <Link
+            href="/admin/comments"
+            className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/5 p-3 hover:border-emerald-500/40 hover:bg-emerald-950/20 transition-all"
+          >
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600/20 text-emerald-400 shrink-0">
+              <MessageSquare className="h-4 w-4" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-white truncate">Comments</p>
+              <p className="text-[10px] text-slate-400 truncate">Moderation</p>
+            </div>
+          </Link>
+
+          <Link
+            href="/admin/polls"
+            className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/5 p-3 hover:border-purple-500/40 hover:bg-purple-950/20 transition-all"
+          >
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-600/20 text-purple-400 shrink-0">
+              <Vote className="h-4 w-4" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-white truncate">Opinion Polls</p>
+              <p className="text-[10px] text-slate-400 truncate">Audience Votes</p>
             </div>
           </Link>
 
           <Link
             href="/admin/notifications"
-            className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3 hover:border-amber-500/40 hover:bg-amber-950/20 transition-all"
+            className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/5 p-3 hover:border-amber-500/40 hover:bg-amber-950/20 transition-all"
           >
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-600/20 text-amber-400 shrink-0">
               <Bell className="h-4 w-4" />
             </div>
             <div className="min-w-0">
-              <p className="text-xs font-bold text-white truncate">Push Notifications</p>
+              <p className="text-xs font-bold text-white truncate">Push Alerts</p>
               <p className="text-[10px] text-slate-400 truncate">FCM Broadcast</p>
             </div>
           </Link>
 
           <Link
             href="/admin/homepage-builder"
-            className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3 hover:border-indigo-500/40 hover:bg-indigo-950/20 transition-all"
+            className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/5 p-3 hover:border-indigo-500/40 hover:bg-indigo-950/20 transition-all"
           >
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600/20 text-indigo-400 shrink-0">
               <LayoutTemplate className="h-4 w-4" />
             </div>
             <div className="min-w-0">
-              <p className="text-xs font-bold text-white truncate">Homepage Builder</p>
+              <p className="text-xs font-bold text-white truncate">Homepage</p>
               <p className="text-[10px] text-slate-400 truncate">Sections & Order</p>
             </div>
           </Link>
 
           <Link
             href="/admin/theme-customizer"
-            className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3 hover:border-blue-500/40 hover:bg-blue-950/20 transition-all"
+            className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/5 p-3 hover:border-blue-500/40 hover:bg-blue-950/20 transition-all"
           >
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600/20 text-blue-400 shrink-0">
               <Palette className="h-4 w-4" />
             </div>
             <div className="min-w-0">
-              <p className="text-xs font-bold text-white truncate">Live Theme Editor</p>
+              <p className="text-xs font-bold text-white truncate">Live Theme</p>
               <p className="text-[10px] text-slate-400 truncate">Colors & Fonts</p>
             </div>
           </Link>
 
           <Link
             href="/admin/categories"
-            className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3 hover:border-emerald-500/40 hover:bg-emerald-950/20 transition-all"
+            className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/5 p-3 hover:border-emerald-500/40 hover:bg-emerald-950/20 transition-all"
           >
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600/20 text-emerald-400 shrink-0">
               <FolderTree className="h-4 w-4" />
@@ -509,14 +538,14 @@ export default function AdminDashboardPage() {
 
           <Link
             href="/admin/seo-panel"
-            className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3 hover:border-cyan-500/40 hover:bg-cyan-950/20 transition-all"
+            className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/5 p-3 hover:border-cyan-500/40 hover:bg-cyan-950/20 transition-all"
           >
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-cyan-600/20 text-cyan-400 shrink-0">
               <SearchCode className="h-4 w-4" />
             </div>
             <div className="min-w-0">
-              <p className="text-xs font-bold text-white truncate">SEO Health Panel</p>
-              <p className="text-[10px] text-slate-400 truncate">Audit & Sitemaps</p>
+              <p className="text-xs font-bold text-white truncate">SEO & Socials</p>
+              <p className="text-[10px] text-slate-400 truncate">Meta & Links</p>
             </div>
           </Link>
         </div>
@@ -543,10 +572,20 @@ export default function AdminDashboardPage() {
                     <span className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-500/20 text-[10px] font-mono font-bold text-amber-300">
                       #{i + 1}
                     </span>
-                    <span className="flex items-center gap-1 font-mono text-xs font-bold text-blue-400">
-                      <Eye className="h-3 w-3" />
-                      {(item.views || 0).toLocaleString()}
-                    </span>
+                    <div className="flex items-center gap-2 font-mono text-[11px] font-bold">
+                      <span className="flex items-center gap-1 text-blue-400" title="Views (पाठक दृश्य)">
+                        <Eye className="h-3 w-3" />
+                        {(item.views || 0).toLocaleString()}
+                      </span>
+                      <span className="flex items-center gap-1 text-rose-400" title="Likes (लाइक्स)">
+                        <Heart className="h-3 w-3 fill-rose-500/40" />
+                        {((item as any).likes || 0).toLocaleString()}
+                      </span>
+                      <span className="flex items-center gap-1 text-emerald-400" title="Comments (टिप्पणियां)">
+                        <MessageSquare className="h-3 w-3" />
+                        {((item as any).commentsCount || 0).toLocaleString()}
+                      </span>
+                    </div>
                   </div>
                   <h4 className="font-bold text-xs leading-snug text-white line-clamp-2 group-hover:text-blue-300">
                     {item.title}

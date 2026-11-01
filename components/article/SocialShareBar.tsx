@@ -30,23 +30,63 @@ export default function SocialShareBar({
 
   const copyToClipboard = () => {
     const link = getShareUrl();
-    navigator.clipboard.writeText(link);
+    const deeplink = `${link}${link.includes("?") ? "&" : "?"}utm_source=copy_link&utm_medium=deeplink`;
+    navigator.clipboard.writeText(deeplink);
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
   };
 
-  const currentUrl = typeof window !== "undefined" ? getShareUrl() : "";
-  const encodedTitle = encodeURIComponent(title);
-  const encodedUrl = encodeURIComponent(currentUrl);
+  const handleNativeShare = async () => {
+    const rawLink = getShareUrl();
+    const deeplinkUrl = `${rawLink}${rawLink.includes("?") ? "&" : "?"}utm_source=app_share&utm_medium=deeplink`;
 
-  const whatsappUrl = `https://api.whatsapp.com/send?text=${encodedTitle}%20${encodedUrl}`;
-  const telegramUrl = `https://t.me/share/url?url=${encodedUrl}&text=${encodedTitle}`;
-  const twitterUrl = `https://twitter.com/intent/tweet?text=${encodedTitle}&url=${encodedUrl}`;
-  const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
-  const linkedinUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
+    if (typeof navigator !== "undefined" && navigator.share) {
+      try {
+        await navigator.share({
+          title,
+          text: `*${title}*\n\nपूरी खबर भारत पल्स (Bharat Pulse) पर पढ़ें:`,
+          url: deeplinkUrl,
+        });
+        return;
+      } catch {}
+    }
+    copyToClipboard();
+  };
+
+  const currentUrl = typeof window !== "undefined" ? getShareUrl() : "";
+  const deeplinkWhatsapp = `${currentUrl}${currentUrl.includes("?") ? "&" : "?"}utm_source=whatsapp&utm_medium=deeplink`;
+  const deeplinkTelegram = `${currentUrl}${currentUrl.includes("?") ? "&" : "?"}utm_source=telegram&utm_medium=deeplink`;
+  const deeplinkTwitter = `${currentUrl}${currentUrl.includes("?") ? "&" : "?"}utm_source=twitter&utm_medium=deeplink`;
+  const deeplinkFacebook = `${currentUrl}${currentUrl.includes("?") ? "&" : "?"}utm_source=facebook&utm_medium=deeplink`;
+  const deeplinkLinkedin = `${currentUrl}${currentUrl.includes("?") ? "&" : "?"}utm_source=linkedin&utm_medium=deeplink`;
+
+  const encodedTitle = encodeURIComponent(`*${title}*`);
+  const encodedWhatsappUrl = encodeURIComponent(deeplinkWhatsapp);
+  const encodedTelegramUrl = encodeURIComponent(deeplinkTelegram);
+  const encodedTwitterUrl = encodeURIComponent(deeplinkTwitter);
+  const encodedFacebookUrl = encodeURIComponent(deeplinkFacebook);
+  const encodedLinkedinUrl = encodeURIComponent(deeplinkLinkedin);
+
+  const whatsappUrl = `https://api.whatsapp.com/send?text=${encodedTitle}%0A%0A${encodedWhatsappUrl}`;
+  const telegramUrl = `https://t.me/share/url?url=${encodedTelegramUrl}&text=${encodedTitle}`;
+  const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodedTwitterUrl}`;
+  const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodedFacebookUrl}`;
+  const linkedinUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodedLinkedinUrl}`;
 
   return (
     <div className="flex flex-wrap items-center gap-2">
+      {/* Native Device Share Sheet */}
+      <button
+        type="button"
+        onClick={handleNativeShare}
+        aria-label="Share article via device sheet"
+        title="शेयर करें (Native Share)"
+        className="flex items-center gap-1.5 rounded-xl border border-red-500/20 bg-red-500/10 px-3 py-1.5 text-xs font-bold text-red-600 dark:text-red-400 hover:bg-red-600 hover:text-white transition-all shadow-sm cursor-pointer"
+      >
+        <Share2 className="h-3.5 w-3.5" />
+        <span>शेयर करें</span>
+      </button>
+
       {/* WhatsApp */}
       <a
         href={whatsappUrl}

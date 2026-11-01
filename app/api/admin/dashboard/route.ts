@@ -55,7 +55,7 @@ export async function GET(req: NextRequest) {
       News.countDocuments({ isBreaking: true }),
       News.countDocuments({ createdAt: { $gte: last24h } }),
       News.aggregate([{ $group: { _id: null, totalViews: { $sum: "$views" } } }]),
-      News.find().sort({ views: -1 }).limit(5).select("title views category date image slug").lean(),
+      News.find().sort({ views: -1 }).limit(5).select("title views likes commentsCount category date image slug").lean(),
       News.find().sort({ createdAt: -1 }).limit(10).lean(),
       User.countDocuments(),
       User.countDocuments({ isActive: { $ne: false } }),

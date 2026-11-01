@@ -22,6 +22,7 @@ import {
   Bell,
   Users,
   Vote,
+  MessageSquare,
 } from "lucide-react";
 import { useState } from "react";
 import type { Role } from "@/lib/auth/rbac";
@@ -112,6 +113,12 @@ export default function AdminNav({ currentUser }: AdminNavProps) {
       href: "/admin/polls",
       icon: Vote,
       badge: "Live",
+    },
+    {
+      label: "Reader Comments",
+      href: "/admin/comments",
+      icon: MessageSquare,
+      badge: "Mod",
     },
     {
       label: "SEO & Social Links",

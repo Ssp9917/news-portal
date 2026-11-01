@@ -59,6 +59,9 @@ export interface INews extends Document {
   tags: string[];
   gallery?: string[];
   views?: number;
+  likes?: number;
+  likedBy?: string[];
+  commentsCount?: number;
   breakingExpiresAt?: Date;
   videoUrl?: string;
   videoDuration?: string;
@@ -142,6 +145,9 @@ const NewsSchema: Schema = new Schema(
     tags: { type: [String], default: [] },
     gallery: { type: [String], default: [] },
     views: { type: Number, default: 0 },
+    likes: { type: Number, default: 0 },
+    likedBy: { type: [String], default: [] },
+    commentsCount: { type: Number, default: 0 },
     breakingExpiresAt: { type: Date },
     videoUrl: { type: String, default: "" },
     videoDuration: { type: String, default: "" },
