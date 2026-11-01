@@ -118,8 +118,9 @@ export async function sendNotificationToAudience(
 
   if (certOptions) {
     try {
-      // Lazy import firebase-admin if configured
-      const admin = await import("firebase-admin");
+      // Lazy load firebase-admin dynamically without static bundler resolution
+      const adminPkg = "firebase-admin";
+      const admin = await import(/* webpackIgnore: true */ adminPkg);
       if (!admin.apps.length) {
         admin.initializeApp({
           credential: admin.credential.cert(certOptions),

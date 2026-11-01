@@ -2,7 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { v2 as cloudinary } from "cloudinary";
 import path from "path";
 import fs from "fs/promises";
-import sharp from "sharp";
+async function getSharp() {
+  try {
+    const s = await import("sharp");
+    return s.default || s;
+  } catch {
+    return null;
+  }
+}
 
 // Configure Cloudinary if environment variables are present
 if (
@@ -56,13 +63,25 @@ export async function POST(req: NextRequest) {
 
     // ── 1. IMAGE PROCESSING: Always Convert & Save in WebP ──
     if (!isVideo) {
-      // Process and optimize with Sharp into WebP
-      const webpBuffer = await sharp(buffer)
-        .rotate() // auto-orient based on EXIF
-        .webp({ quality: 82, effort: 4 })
-        .toBuffer();
+      const sharp = await getSharp();
+      let webpBuffer = buffer;
+      let imgWidth = 1200;
+      let imgHeight = 800;
 
-      const imageMeta = await sharp(webpBuffer).metadata();
+      if (sharp) {
+        try {
+          webpBuffer = await sharp(buffer)
+            .rotate() // auto-orient based on EXIF
+            .webp({ quality: 82, effort: 4 })
+            .toBuffer();
+          const imageMeta = await sharp(webpBuffer).metadata();
+          imgWidth = imageMeta.width || 1200;
+          imgHeight = imageMeta.height || 800;
+        } catch {
+          webpBuffer = buffer;
+        }
+      }
+
       const seoAlt = generateSeoAlt(file.name, customAlt);
       const webpFilename = `${baseCleanName}-${timestamp}.webp`;
 
@@ -85,8 +104,8 @@ export async function POST(req: NextRequest) {
           return NextResponse.json({
             url: cloudResult.secure_url,
             publicId: cloudResult.public_id,
-            width: cloudResult.width || imageMeta.width,
-            height: cloudResult.height || imageMeta.height,
+            width: cloudResult.width || imgWidth,
+            height: cloudResult.height || imgHeight,
             format: "webp",
             resourceType: "image",
             altText: seoAlt,
@@ -105,8 +124,8 @@ export async function POST(req: NextRequest) {
 
       return NextResponse.json({
         url: `/uploads/images/${webpFilename}`,
-        width: imageMeta.width || 800,
-        height: imageMeta.height || 600,
+        width: imgWidth,
+        height: imgHeight,
         format: "webp",
         resourceType: "image",
         altText: seoAlt,
