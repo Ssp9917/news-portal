@@ -25,6 +25,8 @@ import {
   User,
   Users,
   Zap,
+  Bell,
+  RefreshCw,
 } from "lucide-react";
 import type { Role } from "@/lib/auth/rbac";
 import { hasPermission } from "@/lib/auth/rbac";
@@ -54,6 +56,43 @@ interface CurrentUser {
   role: Role;
 }
 
+interface DashboardMetrics {
+  articles: {
+    total: number;
+    published: number;
+    drafts: number;
+    breaking: number;
+    today: number;
+    totalViews: number;
+    avgViews: number;
+  };
+  users: {
+    total: number;
+    active: number;
+    verified: number;
+    today: number;
+  };
+  engagement: {
+    fcmSubscribers: number;
+    categories: number;
+    comments: number;
+    pollVotes: number;
+  };
+  seo: {
+    healthScore: number;
+  };
+}
+
+interface RecentUserItem {
+  _id: string;
+  name?: string;
+  email: string;
+  role: string;
+  createdAt: string;
+  isEmailVerified: boolean;
+  preferences?: { city?: string; language?: string };
+}
+
 export default function AdminDashboardPage() {
   const [news, setNews] = useState<NewsItem[]>([]);
   const [categories, setCategories] = useState<{ name: string; slug: string }[]>([]);
@@ -61,8 +100,14 @@ export default function AdminDashboardPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
   const [loading, setLoading] = useState(true);
-  const [seoScore, setSeoScore] = useState<number>(85);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [metrics, setMetrics] = useState<DashboardMetrics>({
+    articles: { total: 0, published: 0, drafts: 0, breaking: 0, today: 0, totalViews: 0, avgViews: 0 },
+    users: { total: 0, active: 0, verified: 0, today: 0 },
+    engagement: { fcmSubscribers: 0, categories: 0, comments: 0, pollVotes: 0 },
+    seo: { healthScore: 88 },
+  });
+  const [recentUsers, setRecentUsers] = useState<RecentUserItem[]>([]);
   const router = useRouter();
 
   useEffect(() => {
@@ -92,12 +137,22 @@ export default function AdminDashboardPage() {
   };
 
   const fetchData = async () => {
+    const token = localStorage.getItem("admin_token");
+    setLoading(true);
     try {
-      const [newsRes, catRes, seoRes] = await Promise.all([
+      const [dashRes, newsRes, catRes] = await Promise.all([
+        fetch("/api/admin/dashboard", {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        }),
         fetch("/api/news?limit=100"),
         fetch("/api/admin/categories"),
-        fetch("/api/admin/seo"),
       ]);
+
+      if (dashRes.ok) {
+        const dashData = await dashRes.json();
+        if (dashData.metrics) setMetrics(dashData.metrics);
+        if (dashData.recentUsers) setRecentUsers(dashData.recentUsers);
+      }
 
       if (newsRes.ok) {
         const newsData = await newsRes.json();
@@ -107,13 +162,6 @@ export default function AdminDashboardPage() {
       if (catRes.ok) {
         const catData = await catRes.json();
         setCategories(catData);
-      }
-
-      if (seoRes.ok) {
-        const seoData = await seoRes.json();
-        if (seoData?.audit?.healthScore !== undefined) {
-          setSeoScore(seoData.audit.healthScore);
-        }
       }
     } catch (err) {
       console.error(err);
@@ -167,10 +215,17 @@ export default function AdminDashboardPage() {
     } catch {}
   };
 
-  const totalViews = news.reduce((acc, curr) => acc + (curr.views || 0), 0);
-  const totalArticles = news.length;
-  const publishedCount = news.filter((n) => n.published !== false).length;
-  const breakingCount = news.filter((n) => n.isBreaking).length;
+  const totalViews =
+    metrics.articles.totalViews || news.reduce((acc, curr) => acc + (curr.views || 0), 0);
+  const totalArticles = metrics.articles.total || news.length;
+  const publishedCount =
+    metrics.articles.published || news.filter((n) => n.published !== false).length;
+  const breakingCount =
+    metrics.articles.breaking || news.filter((n) => n.isBreaking).length;
+  const totalUsersCount = metrics.users.total;
+  const activeUsersCount = metrics.users.active;
+  const fcmCount = metrics.engagement.fcmSubscribers;
+  const seoScore = metrics.seo.healthScore || 88;
 
   const topNews = [...news].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 4);
 
@@ -207,16 +262,24 @@ export default function AdminDashboardPage() {
         {/* Page Header */}
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-white lg:text-3xl">
+            <h1 className="text-2xl font-black tracking-tight text-white lg:text-3xl">
               Editorial CMS Dashboard
             </h1>
-            <p className="mt-1 text-sm text-slate-400">
+            <p className="mt-1 text-xs text-slate-400">
               Welcome back, <strong className="text-white">{currentUser?.name || currentUser?.email || "Editor"}</strong>.
-              Here is your publication overview.
+              Here is your real-time publication & reader analytics overview.
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <button
+              onClick={() => fetchData()}
+              className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 px-3.5 py-2.5 text-xs font-semibold text-white transition-all"
+              title="Refresh live metrics"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 text-slate-300 ${loading ? "animate-spin" : ""}`} />
+              <span>Refresh</span>
+            </button>
             <Link
               href="/admin/theme-customizer"
               className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-xs font-semibold text-slate-300 hover:bg-white/10 transition-colors"
@@ -227,7 +290,7 @@ export default function AdminDashboardPage() {
             {canCreate && (
               <Link
                 href="/admin/add-news"
-                className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 px-5 py-2.5 text-xs font-bold text-white shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:scale-[1.02] transition-all"
+                className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-red-600 via-rose-600 to-amber-500 px-5 py-2.5 text-xs font-bold text-white shadow-lg shadow-red-900/30 hover:opacity-95 hover:scale-[1.02] transition-all"
               >
                 <Plus className="h-4 w-4" />
                 <span>Publish Article</span>
@@ -236,196 +299,320 @@ export default function AdminDashboardPage() {
           </div>
         </div>
 
-        {/* 4 Primary KPI Cards */}
-        <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {/* 6 Primary Live KPI Cards */}
+        <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
           {/* Card 1: Total Stories */}
-          <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl shadow-xl shadow-black/10">
+          <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-xl shadow-xl shadow-black/10">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                Total Stories
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                Stories
               </span>
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/20 text-blue-400">
-                <FileText className="h-4 w-4" />
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-500/20 text-blue-400">
+                <FileText className="h-3.5 w-3.5" />
               </div>
             </div>
-            <div className="mt-2 flex items-baseline gap-2">
-              <span className="text-3xl font-extrabold text-white font-mono">
+            <div className="mt-2 flex items-baseline gap-1.5">
+              <span className="text-2xl font-black text-white font-mono">
                 {totalArticles}
               </span>
-              <span className="text-xs text-emerald-400 font-semibold">
+              <span className="text-[11px] text-emerald-400 font-semibold">
                 {publishedCount} Active
               </span>
             </div>
-            <p className="mt-2 text-xs text-slate-400">
-              Across {categories.length} dynamic categories
+            <p className="mt-1.5 text-[10px] text-slate-400 truncate">
+              {metrics.articles.today > 0 ? `+${metrics.articles.today} added today` : `Across ${categories.length} beats`}
             </p>
           </div>
 
           {/* Card 2: Total Readership Views */}
-          <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl shadow-xl shadow-black/10">
+          <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-xl shadow-xl shadow-black/10">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                Total Readership Views
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                Readership Views
               </span>
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-500/20 text-indigo-400">
-                <Eye className="h-4 w-4" />
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-500/20 text-indigo-400">
+                <Eye className="h-3.5 w-3.5" />
               </div>
             </div>
-            <div className="mt-2 flex items-baseline gap-2">
-              <span className="text-3xl font-extrabold text-white font-mono">
+            <div className="mt-2 flex items-baseline gap-1.5">
+              <span className="text-2xl font-black text-white font-mono truncate">
                 {totalViews.toLocaleString()}
               </span>
-              <span className="text-xs text-blue-400 font-semibold">Live Traffic</span>
             </div>
-            <p className="mt-2 text-xs text-slate-400">
-              Avg. {totalArticles > 0 ? Math.round(totalViews / totalArticles) : 0} reads per story
+            <p className="mt-1.5 text-[10px] text-blue-400 font-semibold truncate">
+              ~{metrics.articles.avgViews || 0} avg reads/story
             </p>
           </div>
 
-          {/* Card 3: Breaking News Ticker */}
-          <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl shadow-xl shadow-black/10">
+          {/* Card 3: Registered Readers */}
+          <Link
+            href="/admin/users"
+            className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-xl shadow-xl shadow-black/10 hover:border-red-500/40 transition-all block"
+          >
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 group-hover:text-red-300">
+                Readers / Users
+              </span>
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-red-500/20 text-red-400">
+                <Users className="h-3.5 w-3.5" />
+              </div>
+            </div>
+            <div className="mt-2 flex items-baseline gap-1.5">
+              <span className="text-2xl font-black text-white font-mono">
+                {totalUsersCount}
+              </span>
+              <span className="text-[11px] text-emerald-400 font-semibold">
+                {activeUsersCount} Active
+              </span>
+            </div>
+            <p className="mt-1.5 text-[10px] text-slate-400 truncate">
+              {metrics.users.today > 0 ? `+${metrics.users.today} joined today` : "Click to view directory"}
+            </p>
+          </Link>
+
+          {/* Card 4: Push Notification Subscribers */}
+          <Link
+            href="/admin/notifications"
+            className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-xl shadow-xl shadow-black/10 hover:border-amber-500/40 transition-all block"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 group-hover:text-amber-300">
+                Subscribers
+              </span>
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-500/20 text-amber-400">
+                <Bell className="h-3.5 w-3.5" />
+              </div>
+            </div>
+            <div className="mt-2 flex items-baseline gap-1.5">
+              <span className="text-2xl font-black text-amber-400 font-mono">
+                {fcmCount}
+              </span>
+              <span className="text-[11px] text-slate-400">Devices</span>
+            </div>
+            <p className="mt-1.5 text-[10px] text-slate-400 truncate">
+              FCM Broadcast Ready
+            </p>
+          </Link>
+
+          {/* Card 5: Breaking News Alerts */}
+          <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-xl shadow-xl shadow-black/10">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
                 Breaking Alerts
               </span>
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-500/20 text-red-400">
-                <Zap className="h-4 w-4" />
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-rose-500/20 text-rose-400">
+                <Zap className="h-3.5 w-3.5" />
               </div>
             </div>
-            <div className="mt-2 flex items-baseline gap-2">
-              <span className="text-3xl font-extrabold text-red-400 font-mono">
+            <div className="mt-2 flex items-baseline gap-1.5">
+              <span className="text-2xl font-black text-rose-400 font-mono">
                 {breakingCount}
               </span>
-              <span className="text-xs text-slate-400">On Marquee</span>
+              <span className="text-[11px] text-slate-400">Marquee</span>
             </div>
-            <p className="mt-2 text-xs text-slate-400">
-              Live banner on homepage top
+            <p className="mt-1.5 text-[10px] text-slate-400 truncate">
+              Live banner on top
             </p>
           </div>
 
-          {/* Card 4: SEO Health Score */}
-          <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl shadow-xl shadow-black/10">
+          {/* Card 6: SEO Health Score */}
+          <Link
+            href="/admin/seo-panel"
+            className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-xl shadow-xl shadow-black/10 hover:border-cyan-500/40 transition-all block"
+          >
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                SEO Audit Score
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 group-hover:text-cyan-300">
+                SEO Health
               </span>
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-cyan-500/20 text-cyan-400">
-                <SearchCode className="h-4 w-4" />
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-cyan-500/20 text-cyan-400">
+                <SearchCode className="h-3.5 w-3.5" />
               </div>
             </div>
-            <div className="mt-2 flex items-baseline gap-2">
-              <span className="text-3xl font-extrabold text-cyan-400 font-mono">
+            <div className="mt-2 flex items-baseline gap-1.5">
+              <span className="text-2xl font-black text-cyan-400 font-mono">
                 {seoScore}%
               </span>
-              <span className="text-xs text-emerald-400 font-semibold">High Health</span>
+              <span className="text-[11px] text-emerald-400 font-semibold">Healthy</span>
             </div>
-            <p className="mt-2 text-xs text-slate-400">
-              Google News Sitemap & JSON-LD active
+            <p className="mt-1.5 text-[10px] text-slate-400 truncate">
+              Google Sitemap & JSON-LD
             </p>
-          </div>
+          </Link>
         </div>
 
         {/* Quick Management Shortcuts */}
-        <div className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-5">
+        <div className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
           <Link
             href="/admin/users"
-            className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3.5 hover:border-red-500/40 hover:bg-red-950/20 transition-all"
+            className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3 hover:border-red-500/40 hover:bg-red-950/20 transition-all"
           >
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-red-600/20 text-red-400">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-600/20 text-red-400 shrink-0">
               <Users className="h-4 w-4" />
             </div>
-            <div>
-              <p className="text-xs font-bold text-white">Users & Readers</p>
-              <p className="text-[11px] text-slate-400">Manage Directory</p>
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-white truncate">Users & Readers</p>
+              <p className="text-[10px] text-slate-400 truncate">Manage Directory</p>
             </div>
           </Link>
 
           <Link
-            href="/admin/theme-customizer"
-            className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3.5 hover:border-blue-500/40 hover:bg-blue-950/20 transition-all"
+            href="/admin/notifications"
+            className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3 hover:border-amber-500/40 hover:bg-amber-950/20 transition-all"
           >
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600/20 text-blue-400">
-              <Palette className="h-4 w-4" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-600/20 text-amber-400 shrink-0">
+              <Bell className="h-4 w-4" />
             </div>
-            <div>
-              <p className="text-xs font-bold text-white">Live Theme Editor</p>
-              <p className="text-[11px] text-slate-400">Colors, Blur & Styles</p>
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-white truncate">Push Notifications</p>
+              <p className="text-[10px] text-slate-400 truncate">FCM Broadcast</p>
             </div>
           </Link>
 
           <Link
             href="/admin/homepage-builder"
-            className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3.5 hover:border-indigo-500/40 hover:bg-indigo-950/20 transition-all"
+            className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3 hover:border-indigo-500/40 hover:bg-indigo-950/20 transition-all"
           >
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-600/20 text-indigo-400">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600/20 text-indigo-400 shrink-0">
               <LayoutTemplate className="h-4 w-4" />
             </div>
-            <div>
-              <p className="text-xs font-bold text-white">Homepage Builder</p>
-              <p className="text-[11px] text-slate-400">Drag & Drop Sections</p>
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-white truncate">Homepage Builder</p>
+              <p className="text-[10px] text-slate-400 truncate">Sections & Order</p>
+            </div>
+          </Link>
+
+          <Link
+            href="/admin/theme-customizer"
+            className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3 hover:border-blue-500/40 hover:bg-blue-950/20 transition-all"
+          >
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600/20 text-blue-400 shrink-0">
+              <Palette className="h-4 w-4" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-white truncate">Live Theme Editor</p>
+              <p className="text-[10px] text-slate-400 truncate">Colors & Fonts</p>
             </div>
           </Link>
 
           <Link
             href="/admin/categories"
-            className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3.5 hover:border-emerald-500/40 hover:bg-emerald-950/20 transition-all"
+            className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3 hover:border-emerald-500/40 hover:bg-emerald-950/20 transition-all"
           >
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-600/20 text-emerald-400">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600/20 text-emerald-400 shrink-0">
               <FolderTree className="h-4 w-4" />
             </div>
-            <div>
-              <p className="text-xs font-bold text-white">Categories</p>
-              <p className="text-[11px] text-slate-400">Manage News Beats</p>
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-white truncate">Categories</p>
+              <p className="text-[10px] text-slate-400 truncate">News Beats</p>
             </div>
           </Link>
 
           <Link
             href="/admin/seo-panel"
-            className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3.5 hover:border-cyan-500/40 hover:bg-cyan-950/20 transition-all"
+            className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3 hover:border-cyan-500/40 hover:bg-cyan-950/20 transition-all"
           >
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-cyan-600/20 text-cyan-400">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-cyan-600/20 text-cyan-400 shrink-0">
               <SearchCode className="h-4 w-4" />
             </div>
-            <div>
-              <p className="text-xs font-bold text-white">SEO Health Panel</p>
-              <p className="text-[11px] text-slate-400">Audit & Sitemaps</p>
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-white truncate">SEO Health Panel</p>
+              <p className="text-[10px] text-slate-400 truncate">Audit & Sitemaps</p>
             </div>
           </Link>
         </div>
 
-        {/* Top 4 Most Popular Articles Leaderboard */}
-        <div className="mb-8 rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl shadow-xl">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-slate-300">
-              <Flame className="h-4 w-4 text-amber-400" />
-              <span>Trending Reader Favorites</span>
-            </h2>
+        {/* Dual Analytics Row: Trending Stories & Recent Readers */}
+        <div className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-12">
+          {/* Left: Top Trending Articles (8 cols) */}
+          <div className="lg:col-span-8 rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl shadow-xl">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-300">
+                <Flame className="h-4 w-4 text-amber-400" />
+                <span>Trending Reader Favorites</span>
+              </h2>
+              <span className="text-[11px] text-slate-400">Ranked by verified reads</span>
+            </div>
+
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {topNews.map((item, i) => (
+                <div
+                  key={item._id}
+                  className="group relative overflow-hidden rounded-xl border border-white/10 bg-slate-900/60 p-3.5 transition-all hover:border-blue-500/40 hover:bg-slate-900"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-500/20 text-[10px] font-mono font-bold text-amber-300">
+                      #{i + 1}
+                    </span>
+                    <span className="flex items-center gap-1 font-mono text-xs font-bold text-blue-400">
+                      <Eye className="h-3 w-3" />
+                      {(item.views || 0).toLocaleString()}
+                    </span>
+                  </div>
+                  <h4 className="font-bold text-xs leading-snug text-white line-clamp-2 group-hover:text-blue-300">
+                    {item.title}
+                  </h4>
+                  <div className="mt-2 flex items-center justify-between text-[10px] text-slate-400">
+                    <span className="truncate text-red-400 font-semibold">{item.category}</span>
+                    <span>{item.date}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {topNews.map((item, i) => (
-              <div
-                key={item._id}
-                className="group relative overflow-hidden rounded-xl border border-white/10 bg-slate-900/60 p-3.5 transition-all hover:border-blue-500/40 hover:bg-slate-900"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-500/20 text-[10px] font-mono font-bold text-amber-300">
-                    #{i + 1}
-                  </span>
-                  <span className="flex items-center gap-1 font-mono text-xs font-bold text-blue-400">
-                    <Eye className="h-3 w-3" />
-                    {(item.views || 0).toLocaleString()}
-                  </span>
-                </div>
-                <h4 className="font-bold text-xs leading-snug text-white line-clamp-2 group-hover:text-blue-300">
-                  {item.title}
-                </h4>
-                <div className="mt-2 flex items-center justify-between text-[10px] text-slate-400">
-                  <span className="truncate">{item.category}</span>
-                  <span>{item.date}</span>
-                </div>
+          {/* Right: Recent Reader Registrations (4 cols) */}
+          <div className="lg:col-span-4 rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl shadow-xl flex flex-col justify-between">
+            <div>
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-300">
+                  <Users className="h-4 w-4 text-red-400" />
+                  <span>Recent Reader Signups</span>
+                </h2>
+                <Link
+                  href="/admin/users"
+                  className="text-[11px] font-bold text-red-400 hover:underline"
+                >
+                  All ({totalUsersCount}) →
+                </Link>
               </div>
-            ))}
+
+              <div className="space-y-2.5">
+                {recentUsers.length > 0 ? (
+                  recentUsers.slice(0, 4).map((u) => (
+                    <div
+                      key={u._id}
+                      className="flex items-center justify-between rounded-xl border border-white/5 bg-slate-900/40 p-2.5 text-xs"
+                    >
+                      <div className="min-w-0 pr-2">
+                        <div className="flex items-center gap-1.5 font-bold text-white truncate">
+                          <span>{u.name || "Reader"}</span>
+                          {u.isEmailVerified && (
+                            <CheckCircle2 className="h-3 w-3 text-emerald-400 shrink-0" />
+                          )}
+                        </div>
+                        <div className="text-[10px] text-slate-400 font-mono truncate">
+                          {u.email}
+                        </div>
+                      </div>
+                      <span className="rounded-full bg-white/10 px-2 py-0.5 text-[9px] font-bold uppercase text-slate-300 shrink-0">
+                        {u.role}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-xs text-slate-500 italic py-6 text-center">
+                    No recent readers recorded yet.
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <Link
+              href="/admin/users"
+              className="mt-4 block text-center rounded-xl bg-white/5 hover:bg-white/10 py-2 text-xs font-bold text-white transition-colors border border-white/10"
+            >
+              Open Readers Directory
+            </Link>
           </div>
         </div>
 

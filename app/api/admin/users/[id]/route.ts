@@ -173,3 +173,4 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
+
