@@ -149,10 +149,10 @@ export default function AdminNotificationCenter() {
   };
 
   return (
-    <div className="flex min-h-screen bg-slate-950 text-slate-100">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-slate-950 text-slate-100">
       <AdminNav />
 
-      <main className="flex-1 p-6 lg:p-10 max-w-7xl mx-auto w-full">
+      <main className="flex-1 w-full min-w-0 p-4 sm:p-6 lg:p-10 max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
           <div>
@@ -255,7 +255,7 @@ export default function AdminNotificationCenter() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
+              <table className="w-full text-left text-xs min-w-[620px]">
                 <thead>
                   <tr className="border-b border-white/10 text-slate-400 uppercase tracking-wider text-[10px]">
                     <th className="py-3 px-3">कैंपेन / शीर्षक</th>

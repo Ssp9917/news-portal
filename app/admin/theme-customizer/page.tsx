@@ -228,10 +228,10 @@ export default function ThemeCustomizerPage() {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#070b14] text-slate-100">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-[#070b14] text-slate-100">
       <AdminNav currentUser={currentUser} />
 
-      <main className="flex-1 overflow-y-auto p-4 lg:p-8">
+      <main className="flex-1 w-full min-w-0 overflow-y-auto p-4 sm:p-6 lg:p-8">
         {/* Toast Alert */}
         {toastMessage && (
           <div className="fixed top-6 right-6 z-50 flex items-center gap-2 rounded-xl border border-blue-500/30 bg-blue-950/90 px-4 py-3 text-sm text-white shadow-2xl backdrop-blur-xl animate-in fade-in slide-in-from-top-4">

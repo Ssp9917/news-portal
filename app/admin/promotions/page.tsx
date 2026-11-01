@@ -148,10 +148,10 @@ export default function AdminPromotionsManager() {
   ];
 
   return (
-    <div className="flex min-h-screen bg-slate-950 text-slate-100">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-slate-950 text-slate-100">
       <AdminNav />
 
-      <main className="flex-1 p-6 lg:p-10 max-w-7xl mx-auto w-full">
+      <main className="flex-1 w-full min-w-0 p-4 sm:p-6 lg:p-10 max-w-7xl mx-auto">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
           <div>
             <div className="flex items-center gap-2 mb-1">

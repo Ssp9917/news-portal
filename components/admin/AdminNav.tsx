@@ -127,10 +127,13 @@ export default function AdminNav({ currentUser }: AdminNavProps) {
       {/* Mobile Top Bar */}
       <header className="lg:hidden sticky top-0 z-50 flex items-center justify-between border-b border-white/10 bg-slate-950/90 px-4 py-3 backdrop-blur-xl">
         <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-bold shadow-lg shadow-blue-500/20">
-            DL
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-tr from-[#9a1418] via-[#c61d23] to-[#ef4444] text-white font-bold shadow-lg shadow-red-900/30">
+            <Sparkles className="h-4 w-4" />
           </div>
-          <span className="font-bold text-white tracking-wide">CMS STUDIO</span>
+          <div>
+            <span className="font-bold text-white tracking-wide text-sm">BHARAT PULSE</span>
+            <span className="block text-[9px] text-red-400 font-bold uppercase tracking-wider">CMS STUDIO</span>
+          </div>
         </div>
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
@@ -140,22 +143,31 @@ export default function AdminNav({ currentUser }: AdminNavProps) {
         </button>
       </header>
 
+      {/* Mobile Backdrop Overlay */}
+      {mobileOpen && (
+        <div
+          onClick={() => setMobileOpen(false)}
+          className="fixed inset-0 z-40 bg-black/75 backdrop-blur-sm lg:hidden transition-opacity"
+          aria-hidden="true"
+        />
+      )}
+
       {/* Sidebar Navigation */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r border-white/10 bg-slate-950/95 backdrop-blur-2xl transition-transform duration-300 lg:static lg:translate-x-0 ${
-          mobileOpen ? "translate-x-0" : "-translate-x-full"
+        className={`fixed inset-y-0 left-0 z-50 flex w-72 flex-col border-r border-white/10 bg-slate-950/98 backdrop-blur-2xl transition-transform duration-300 lg:static lg:translate-x-0 ${
+          mobileOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"
         }`}
       >
         {/* Brand Header */}
         <div className="flex items-center justify-between border-b border-white/10 px-6 py-5">
           <Link href="/admin/dashboard" className="flex items-center gap-3">
-            <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-500 text-white shadow-xl shadow-blue-500/25">
+            <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-[#9a1418] via-[#c61d23] to-[#ef4444] text-white shadow-xl shadow-red-900/30">
               <Sparkles className="h-5 w-5" />
             </div>
             <div>
               <div className="flex items-center gap-1.5 font-bold tracking-tight text-white text-base">
-                <span>DAILY LATEST</span>
-                <span className="rounded bg-blue-500/20 px-1 py-0.5 text-[10px] font-extrabold text-blue-400">
+                <span>BHARAT PULSE</span>
+                <span className="rounded bg-red-500/20 px-1 py-0.5 text-[10px] font-extrabold text-red-400">
                   PRO
                 </span>
               </div>

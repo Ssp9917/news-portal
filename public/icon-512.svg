@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <!-- Background Gradient: Deep Crimson Ruby to Scarlet -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7a0006"/>
+      <stop offset="35%" stop-color="#ad1118"/>
+      <stop offset="70%" stop-color="#c61d23"/>
+      <stop offset="100%" stop-color="#e63946"/>
+    </linearGradient>
+
+    <!-- Metallic Gold Highlight Gradient -->
+    <linearGradient id="goldGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="50%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#fef08a"/>
+    </linearGradient>
+
+    <!-- Signal Pulse Glow -->
+    <linearGradient id="pulseGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="50%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#ffffff"/>
+    </linearGradient>
+
+    <!-- Subtle Drop Shadow for App Icon Depth -->
+    <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#000000" flood-opacity="0.45"/>
+    </filter>
+
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Squircle Base for Mobile App Icon (iOS & Android Maskable Friendly) -->
+  <rect x="24" y="24" width="464" height="464" rx="112" fill="url(#bgGrad)" filter="url(#shadow)"/>
+
+  <!-- Inner Glossy Rim Highlight -->
+  <rect x="28" y="28" width="456" height="456" rx="108" fill="none" stroke="rgba(255,255,255,0.22)" stroke-width="4"/>
+  <rect x="36" y="36" width="440" height="440" rx="100" fill="none" stroke="rgba(251,191,36,0.25)" stroke-width="2"/>
+
+  <!-- Tricolor Accent Badges (Top Right Ribbon) -->
+  <g opacity="0.95">
+    <path d="M 370 48 L 440 118" stroke="#ff9933" stroke-width="6" stroke-linecap="round"/>
+    <path d="M 385 48 L 455 118" stroke="#ffffff" stroke-width="6" stroke-linecap="round"/>
+    <path d="M 400 48 L 470 118" stroke="#138808" stroke-width="6" stroke-linecap="round"/>
+  </g>
+
+  <!-- Main Monogram Emblem: Stylized Capital 'B' + Live Pulse Waveform -->
+  <g transform="translate(4, -6)">
+    <!-- Bold 'B' Spine (Left Pillar) -->
+    <rect x="118" y="118" width="52" height="280" rx="16" fill="#ffffff" filter="url(#shadow)"/>
+
+    <!-- 'B' Top Loop (Newspaper Fold Silhouette) -->
+    <path d="M 160 118 
+             L 268 118 
+             C 324 118, 362 152, 362 202 
+             C 362 248, 324 274, 274 276 
+             L 160 276 Z" 
+          fill="none" 
+          stroke="#ffffff" 
+          stroke-width="50" 
+          stroke-linejoin="round"
+          stroke-linecap="round"/>
+
+    <!-- 'B' Bottom Loop -->
+    <path d="M 160 262 
+             L 282 262 
+             C 342 262, 382 298, 382 352 
+             C 382 404, 338 438, 272 438 
+             L 160 438 Z" 
+          fill="none" 
+          stroke="#ffffff" 
+          stroke-width="50" 
+          stroke-linejoin="round"
+          stroke-linecap="round"/>
+
+    <!-- Gold Accent Fill In Top Loop -->
+    <circle cx="258" cy="198" r="16" fill="url(#goldGrad)"/>
+
+    <!-- Energetic Heartbeat / Broadcast Pulse Wave traversing through the 'B' -->
+    <path d="M 72 272 
+             L 138 272 
+             L 162 220 
+             L 194 324 
+             L 228 238 
+             L 252 296 
+             L 276 272 
+             L 436 272" 
+          fill="none" 
+          stroke="url(#pulseGrad)" 
+          stroke-width="16" 
+          stroke-linecap="round" 
+          stroke-linejoin="round"
+          filter="url(#glow)"/>
+
+    <!-- Signal Broadcast Waves (Right Side) -->
+    <path d="M 408 226 C 426 240, 436 256, 436 272 C 436 288, 426 304, 408 318" 
+          fill="none" 
+          stroke="url(#goldGrad)" 
+          stroke-width="10" 
+          stroke-linecap="round"/>
+    <path d="M 434 206 C 460 226, 474 248, 474 272 C 474 296, 460 318, 434 338" 
+          fill="none" 
+          stroke="url(#goldGrad)" 
+          stroke-width="8" 
+          stroke-linecap="round" 
+          opacity="0.8"/>
+  </g>
+
+  <!-- Live Glowing News Beacon Dot -->
+  <circle cx="396" cy="120" r="14" fill="#fbbf24" filter="url(#glow)"/>
+  <circle cx="396" cy="120" r="7" fill="#ffffff"/>
+</svg>

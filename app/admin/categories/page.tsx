@@ -207,10 +207,10 @@ export default function CategoryManagerPage() {
   );
 
   return (
-    <div className="flex min-h-screen bg-[#070b14] text-slate-100">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-[#070b14] text-slate-100">
       <AdminNav currentUser={currentUser} />
 
-      <main className="flex-1 overflow-y-auto p-4 lg:p-8">
+      <main className="flex-1 w-full min-w-0 overflow-y-auto p-4 sm:p-6 lg:p-8">
         {toastMessage && (
           <div className="fixed top-6 right-6 z-50 flex items-center gap-2 rounded-xl border border-blue-500/30 bg-blue-950/90 px-4 py-3 text-sm text-white shadow-2xl backdrop-blur-xl animate-in fade-in">
             <CheckCircle2 className="h-5 w-5 text-blue-400" />
@@ -265,8 +265,8 @@ export default function CategoryManagerPage() {
         </div>
 
         {/* Categories Table / Card Grid */}
-        <div className="overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl">
-          <table className="w-full text-left text-xs">
+        <div className="overflow-x-auto rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl">
+          <table className="w-full text-left text-xs min-w-[640px]">
             <thead className="border-b border-white/10 bg-slate-950/60 text-[11px] uppercase tracking-wider text-slate-400">
               <tr>
                 <th className="py-3.5 px-4 font-semibold">Priority</th>

@@ -217,16 +217,16 @@ function EditNewsForm() {
       )}
 
       {/* Header */}
-      <div className="mx-auto max-w-6xl mb-6 flex items-center justify-between">
+      <div className="mx-auto max-w-6xl mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Link
           href="/admin/dashboard"
-          className="flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-white transition-colors"
+          className="flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-white transition-colors py-1"
         >
           <ArrowLeft className="h-4 w-4" />
           <span>Back to Dashboard</span>
         </Link>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2.5">
           <Link
             href={`/hi/news/${formData.slug || id}`}
             target="_blank"
