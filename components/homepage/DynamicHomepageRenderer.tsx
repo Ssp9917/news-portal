@@ -7,6 +7,7 @@ import VideoHub from "./VideoHub";
 import SpecialEditorial from "./SpecialEditorial";
 import NewsletterBox from "./NewsletterBox";
 import AdPlacement from "./AdPlacement";
+import PollWidget from "@/components/interactive/PollWidget";
 import NewsFeed from "@/components/NewsFeed";
 import type { Locale } from "@/lib/i18n/config";
 
@@ -156,6 +157,14 @@ export default function DynamicHomepageRenderer({
                 title={sec.title}
                 subtitle={sec.subtitle}
               />
+            );
+
+          case "poll-widget":
+          case "poll":
+            return (
+              <div key={sec.id} className="my-8">
+                <PollWidget />
+              </div>
             );
 
           case "ad-banner":

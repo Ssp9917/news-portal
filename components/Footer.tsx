@@ -73,8 +73,25 @@ export default function Footer() {
   const { locale } = useI18n();
   const [recentStories, setRecentStories] = useState<RecentStory[]>(DEFAULT_RECENT);
   const [categoriesWithCounts, setCategoriesWithCounts] = useState<CategoryCount[]>(DEFAULT_CATEGORIES);
+  const [socials, setSocials] = useState({
+    facebook: "https://facebook.com",
+    twitter: "https://twitter.com",
+    youtube: "https://youtube.com",
+    instagram: "https://instagram.com",
+    telegram: "",
+    whatsapp: "",
+  });
 
   useEffect(() => {
+    // 0. Fetch dynamic social links
+    fetch("/api/settings/social")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.socialLinks) {
+          setSocials((prev) => ({ ...prev, ...data.socialLinks }));
+        }
+      })
+      .catch(() => {});
     // 1. Fetch dynamic recent stories
     fetch("/api/news?limit=5")
       .then((res) => res.json())
@@ -265,7 +282,7 @@ export default function Footer() {
             {/* Social Icons in Small Gray Squares */}
             <div className="flex items-center gap-1.5" aria-label="पादलेख सोशल मीडिया लिंक्स">
               <a
-                href="https://facebook.com"
+                href={socials.facebook || "https://facebook.com"}
                 target="_blank"
                 rel="noreferrer"
                 className="flex h-6 w-6 items-center justify-center rounded bg-neutral-800 text-gray-300 hover:bg-[#1877F2] hover:text-white transition-colors"
@@ -275,7 +292,7 @@ export default function Footer() {
                 <span className="font-bold text-[11px]" aria-hidden="true">f</span>
               </a>
               <a
-                href="https://twitter.com"
+                href={socials.twitter || "https://twitter.com"}
                 target="_blank"
                 rel="noreferrer"
                 className="flex h-6 w-6 items-center justify-center rounded bg-neutral-800 text-gray-300 hover:bg-black hover:text-white transition-colors"
@@ -285,7 +302,7 @@ export default function Footer() {
                 <span className="font-bold text-[10px]" aria-hidden="true">𝕏</span>
               </a>
               <a
-                href="https://youtube.com"
+                href={socials.youtube || "https://youtube.com"}
                 target="_blank"
                 rel="noreferrer"
                 className="flex h-6 w-6 items-center justify-center rounded bg-neutral-800 text-gray-300 hover:bg-red-600 hover:text-white transition-colors"
@@ -294,6 +311,42 @@ export default function Footer() {
               >
                 <span className="font-bold text-[10px]" aria-hidden="true">▶</span>
               </a>
+              {socials.instagram && (
+                <a
+                  href={socials.instagram}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex h-6 w-6 items-center justify-center rounded bg-neutral-800 text-gray-300 hover:bg-gradient-to-tr hover:from-amber-500 hover:to-purple-600 hover:text-white transition-colors"
+                  aria-label="Bharat Pulse on Instagram"
+                  title="Instagram"
+                >
+                  <span className="font-bold text-[10px]" aria-hidden="true">📷</span>
+                </a>
+              )}
+              {socials.whatsapp && (
+                <a
+                  href={socials.whatsapp}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex h-6 w-6 items-center justify-center rounded bg-neutral-800 text-gray-300 hover:bg-emerald-600 hover:text-white transition-colors"
+                  aria-label="Bharat Pulse on WhatsApp Channel"
+                  title="WhatsApp"
+                >
+                  <span className="font-bold text-[10px]" aria-hidden="true">💬</span>
+                </a>
+              )}
+              {socials.telegram && (
+                <a
+                  href={socials.telegram}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex h-6 w-6 items-center justify-center rounded bg-neutral-800 text-gray-300 hover:bg-[#229ED9] hover:text-white transition-colors"
+                  aria-label="Bharat Pulse on Telegram"
+                  title="Telegram"
+                >
+                  <span className="font-bold text-[10px]" aria-hidden="true">✈</span>
+                </a>
+              )}
             </div>
           </div>
         </div>

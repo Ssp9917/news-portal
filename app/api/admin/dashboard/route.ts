@@ -71,7 +71,7 @@ export async function GET(req: NextRequest) {
 
     const totalViews = viewsAggregation[0]?.totalViews || 0;
     const totalPollVotes = pollStats[0]?.totalVotes || 0;
-    const seoScore = seoDoc?.audit?.healthScore ?? 88;
+    const seoScore = (seoDoc as any)?.audit?.healthScore ?? 88;
 
     return NextResponse.json({
       metrics: {

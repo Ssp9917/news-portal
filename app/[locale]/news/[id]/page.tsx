@@ -30,6 +30,7 @@ import PromotionalBannerSlot from "@/components/promotions/PromotionalBannerSlot
 import ArticleBodyContainer from "@/components/article/ArticleBodyContainer";
 import AdPlacement from "@/components/homepage/AdPlacement";
 import NewsletterBox from "@/components/homepage/NewsletterBox";
+import PollWidget from "@/components/interactive/PollWidget";
 import NewsGallery from "@/components/NewsGallery";
 import ViewCounter from "@/components/ViewCounter";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
@@ -516,6 +517,11 @@ export default async function NewsDetailsPage({ params }: NewsDetailsPageProps) 
                   </Link>
                 ))}
               </div>
+            </div>
+
+            {/* Interactive Audience Opinion Poll */}
+            <div className="rounded-2xl overflow-hidden">
+              <PollWidget />
             </div>
 
             {/* Compact Newsletter Widget */}

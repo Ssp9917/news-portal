@@ -146,9 +146,14 @@ export default async function Home({ params }: Props) {
               locale={locale}
             />
 
-            <div className="my-10">
-              <PollWidget />
-            </div>
+            {!homepageConfig.sections.some(
+              (s: any) =>
+                (s.type === "poll-widget" || s.type === "poll") && s.isEnabled !== false
+            ) && (
+                <div className="my-10">
+                  <PollWidget />
+                </div>
+              )}
           </div>
         ) : (
           /* Curated Default Layout */

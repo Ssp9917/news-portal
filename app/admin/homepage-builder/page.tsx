@@ -23,6 +23,7 @@ import {
   Flame,
   Mail,
   Zap,
+  Vote,
 } from "lucide-react";
 import type { Role } from "@/lib/auth/rbac";
 
@@ -37,7 +38,8 @@ interface SectionConfig {
     | "video-hub"
     | "special-editorial"
     | "newsletter"
-    | "ad-banner";
+    | "ad-banner"
+    | "poll-widget";
   title: string;
   subtitle?: string;
   categorySlug?: string;
@@ -128,6 +130,15 @@ const SECTION_TEMPLATES = [
     defaultLayout: "compact" as const,
     defaultCount: 0,
     description: "Glassmorphism subscriber box with email capture input",
+  },
+  {
+    type: "poll-widget",
+    label: "Public Opinion Poll (जनमत सर्वेक्षण)",
+    icon: Vote,
+    defaultTitle: "जनता की राय (Public Opinion Poll)",
+    defaultLayout: "compact" as const,
+    defaultCount: 0,
+    description: "Interactive reader voting poll managed from the Opinion Polls admin panel",
   },
 ];
 

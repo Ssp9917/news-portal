@@ -4,6 +4,7 @@ import path from "path";
 import fs from "fs/promises";
 async function getSharp() {
   try {
+    // @ts-expect-error sharp is an optional native dependency
     const s = await import("sharp");
     return s.default || s;
   } catch {

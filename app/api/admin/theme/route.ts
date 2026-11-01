@@ -32,7 +32,7 @@ export async function POST(req: Request) {
       Object.assign(theme, data);
       await theme.save();
     } else {
-      theme = await ThemeConfig.create(data);
+      theme = (await ThemeConfig.create(data)) as any;
     }
 
     return NextResponse.json({ message: "Theme updated successfully", theme });

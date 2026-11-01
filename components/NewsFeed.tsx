@@ -66,7 +66,7 @@ export default function NewsFeed({ initialNews, locale }: NewsFeedProps) {
             <motion.div key={`${String(newsItem._id)}-${idx}`} variants={item}>
               <NewsCard
                 locale={locale}
-                {...(newsItem as never)}
+                {...(newsItem as any)}
               />
             </motion.div>
           ))

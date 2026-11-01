@@ -150,7 +150,7 @@ export async function sendNotificationToAudience(
         failedCount += response.failureCount;
 
         // Collect invalid/unregistered tokens for automatic pruning
-        response.responses.forEach((resp, idx) => {
+        response.responses.forEach((resp: any, idx: number) => {
           if (!resp.success) {
             const errCode = resp.error?.code;
             if (

@@ -1,13 +1,17 @@
 "use client";
 
 import { ROLE_LABELS, ROLE_COLORS, type Role } from "@/lib/auth/rbac";
-import { Shield, Star, Edit3, Eye } from "lucide-react";
+import { Shield, Star, Edit3, Eye, Feather, UserCheck, Search, Image as ImageIcon } from "lucide-react";
 
 const ROLE_ICONS: Record<Role, React.ReactNode> = {
   super_admin: <Star className="h-3 w-3" />,
   admin: <Shield className="h-3 w-3" />,
   editor: <Edit3 className="h-3 w-3" />,
+  author: <Feather className="h-3 w-3" />,
+  seo_manager: <Search className="h-3 w-3" />,
+  media_manager: <ImageIcon className="h-3 w-3" />,
   viewer: <Eye className="h-3 w-3" />,
+  user: <UserCheck className="h-3 w-3" />,
 };
 
 interface RoleBadgeProps {

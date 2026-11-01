@@ -21,6 +21,7 @@ import {
   Sparkles,
   Bell,
   Users,
+  Vote,
 } from "lucide-react";
 import { useState } from "react";
 import type { Role } from "@/lib/auth/rbac";
@@ -107,7 +108,13 @@ export default function AdminNav({ currentUser }: AdminNavProps) {
       badge: "Marketing",
     },
     {
-      label: "SEO Control Panel",
+      label: "Opinion Polls",
+      href: "/admin/polls",
+      icon: Vote,
+      badge: "Live",
+    },
+    {
+      label: "SEO & Social Links",
       href: "/admin/seo-panel",
       icon: SearchCode,
       badge: "Audit",

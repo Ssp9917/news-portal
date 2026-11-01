@@ -19,6 +19,8 @@ interface VideoItem {
 interface VideoHubProps {
   news: VideoItem[];
   locale: Locale;
+  title?: string;
+  subtitle?: string;
 }
 
 function getYouTubeId(url?: string): string | null {

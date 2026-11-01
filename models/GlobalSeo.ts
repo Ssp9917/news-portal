@@ -20,6 +20,7 @@ export interface IGlobalSeo extends Document {
     youtube: string;
     telegram: string;
     whatsapp: string;
+    linkedin?: string;
   };
   enableGoogleNewsSitemap: boolean;
   robotsTxtCustom: string;
@@ -51,6 +52,7 @@ const GlobalSeoSchema: Schema = new Schema(
       youtube: { type: String, default: "https://youtube.com" },
       telegram: { type: String, default: "https://t.me" },
       whatsapp: { type: String, default: "" },
+      linkedin: { type: String, default: "" },
     },
     enableGoogleNewsSitemap: { type: Boolean, default: true },
     robotsTxtCustom: { type: String, default: "" },

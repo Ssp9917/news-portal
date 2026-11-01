@@ -11,7 +11,8 @@ export interface IHomepageSection {
     | "video-hub"
     | "special-editorial"
     | "newsletter"
-    | "ad-banner";
+    | "ad-banner"
+    | "poll-widget";
   title: string;
   subtitle?: string;
   categorySlug?: string;
@@ -53,6 +54,7 @@ const HomepageSectionSchema = new Schema(
         "special-editorial",
         "newsletter",
         "ad-banner",
+        "poll-widget",
       ],
     },
     title: { type: String, default: "" },

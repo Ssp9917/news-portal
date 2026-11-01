@@ -37,7 +37,7 @@ export async function POST(req: Request) {
       }
       await config.save();
     } else {
-      config = await HomepageConfig.create(data);
+      config = (await HomepageConfig.create(data)) as any;
     }
 
     return NextResponse.json({

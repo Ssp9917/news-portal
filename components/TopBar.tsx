@@ -12,6 +12,25 @@ export default function TopBar() {
   const { user, openAuthModal } = useAuth();
   const [dateStr, setDateStr] = useState("Sat, Oct 31, 2026");
   const [timeStr, setTimeStr] = useState("10:30 PM");
+  const [socials, setSocials] = useState({
+    facebook: "https://facebook.com",
+    twitter: "https://twitter.com",
+    instagram: "https://instagram.com",
+    youtube: "https://youtube.com",
+    whatsapp: "",
+    telegram: "",
+  });
+
+  useEffect(() => {
+    fetch("/api/settings/social")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.socialLinks) {
+          setSocials((prev) => ({ ...prev, ...data.socialLinks }));
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     const updateDateTime = () => {
@@ -96,7 +115,7 @@ export default function TopBar() {
           <div className="flex items-center gap-1.5" aria-label="सोशल मीडिया लिंक्स">
             {/* Facebook */}
             <a
-              href="https://facebook.com"
+              href={socials.facebook || "https://facebook.com"}
               target="_blank"
               rel="noreferrer"
               className="flex h-5 w-5 items-center justify-center rounded-full bg-[#1877F2] text-white hover:opacity-90 transition-opacity"
@@ -110,7 +129,7 @@ export default function TopBar() {
 
             {/* Twitter / X */}
             <a
-              href="https://twitter.com"
+              href={socials.twitter || "https://twitter.com"}
               target="_blank"
               rel="noreferrer"
               className="flex h-5 w-5 items-center justify-center rounded-full bg-black text-white hover:opacity-90 transition-opacity dark:bg-white dark:text-black"
@@ -124,7 +143,7 @@ export default function TopBar() {
 
             {/* Instagram */}
             <a
-              href="https://instagram.com"
+              href={socials.instagram || "https://instagram.com"}
               target="_blank"
               rel="noreferrer"
               className="flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 text-white hover:opacity-90 transition-opacity"
@@ -138,7 +157,7 @@ export default function TopBar() {
 
             {/* YouTube */}
             <a
-              href="https://youtube.com"
+              href={socials.youtube || "https://youtube.com"}
               target="_blank"
               rel="noreferrer"
               className="flex h-5 w-5 items-center justify-center rounded-full bg-[#FF0000] text-white hover:opacity-90 transition-opacity"
@@ -149,6 +168,20 @@ export default function TopBar() {
                 <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
               </svg>
             </a>
+
+            {/* WhatsApp Channel if configured */}
+            {socials.whatsapp && (
+              <a
+                href={socials.whatsapp}
+                target="_blank"
+                rel="noreferrer"
+                className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-600 text-white hover:opacity-90 transition-opacity text-[10px]"
+                aria-label="Bharat Pulse on WhatsApp Channel"
+                title="WhatsApp Channel"
+              >
+                💬
+              </a>
+            )}
           </div>
         </div>
       </div>

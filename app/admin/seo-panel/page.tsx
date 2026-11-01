@@ -15,6 +15,7 @@ import {
   Globe,
   FileCode,
   Sparkles,
+  Share2,
 } from "lucide-react";
 import type { Role } from "@/lib/auth/rbac";
 
@@ -35,8 +36,11 @@ interface GlobalSeoData {
   socialLinks?: {
     twitter?: string;
     facebook?: string;
+    instagram?: string;
     youtube?: string;
     telegram?: string;
+    whatsapp?: string;
+    linkedin?: string;
   };
 }
 
@@ -74,7 +78,7 @@ export default function SeoControlPanelPage() {
   });
 
   const [audit, setAudit] = useState<SeoAudit | null>(null);
-  const [activeTab, setActiveTab] = useState<"settings" | "audit" | "gnews">("settings");
+  const [activeTab, setActiveTab] = useState<"settings" | "social" | "audit" | "gnews">("settings");
   const [saving, setSaving] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<{
@@ -299,6 +303,17 @@ export default function SeoControlPanelPage() {
             Global Meta & Analytics
           </button>
           <button
+            onClick={() => setActiveTab("social")}
+            className={`border-b-2 px-5 py-3 text-xs font-bold uppercase tracking-wider transition-colors flex items-center gap-1.5 ${
+              activeTab === "social"
+                ? "border-blue-500 text-blue-400"
+                : "border-transparent text-slate-400 hover:text-white"
+            }`}
+          >
+            <Share2 className="h-3.5 w-3.5" />
+            <span>सोशल मीडिया लिंक्स (Social Links)</span>
+          </button>
+          <button
             onClick={() => setActiveTab("audit")}
             className={`border-b-2 px-5 py-3 text-xs font-bold uppercase tracking-wider transition-colors ${
               activeTab === "audit"
@@ -501,6 +516,277 @@ export default function SeoControlPanelPage() {
             >
               <Save className="h-4 w-4" />
               <span>{saving ? "Saving Changes..." : "Save Global SEO Configuration"}</span>
+            </button>
+          </form>
+        )}
+
+        {/* Tab 1.5: Social Media Links Manager */}
+        {activeTab === "social" && (
+          <form onSubmit={handleSaveSeo} className="space-y-6 max-w-4xl">
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl space-y-5 text-xs">
+              <div className="border-b border-white/10 pb-3">
+                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                  <Share2 className="h-4 w-4 text-blue-400" />
+                  <span>आधिकारिक सोशल मीडिया लिंक्स (Official Social Links)</span>
+                </h3>
+                <p className="text-xs text-slate-400 mt-1">
+                  यहाँ सेट किए गए लिंक्स हेडर, टॉप बार और फुटर में लाइव अपडेट हो जाएंगे।
+                </p>
+              </div>
+
+              {/* Facebook */}
+              <div className="rounded-xl border border-white/5 bg-slate-900/60 p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <label className="flex items-center gap-2 font-bold text-white">
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#1877F2] text-white text-[11px] font-bold">
+                      f
+                    </span>
+                    <span>Facebook Page URL</span>
+                  </label>
+                  {seo.socialLinks?.facebook && (
+                    <a
+                      href={seo.socialLinks.facebook}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-1 text-[11px] text-blue-400 hover:underline"
+                    >
+                      <span>टेस्ट लिंक</span>
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  )}
+                </div>
+                <input
+                  type="url"
+                  value={seo.socialLinks?.facebook || ""}
+                  onChange={(e) =>
+                    setSeo({
+                      ...seo,
+                      socialLinks: { ...seo.socialLinks, facebook: e.target.value },
+                    })
+                  }
+                  placeholder="https://facebook.com/bharatpulse"
+                  className="w-full rounded-xl border border-white/10 bg-slate-950 px-3.5 py-2.5 font-mono text-white focus:border-blue-500 focus:outline-none"
+                />
+              </div>
+
+              {/* Twitter / X */}
+              <div className="rounded-xl border border-white/5 bg-slate-900/60 p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <label className="flex items-center gap-2 font-bold text-white">
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-black text-white border border-white/20 text-[10px] font-bold">
+                      𝕏
+                    </span>
+                    <span>Twitter / X Profile URL</span>
+                  </label>
+                  {seo.socialLinks?.twitter && (
+                    <a
+                      href={seo.socialLinks.twitter}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-1 text-[11px] text-blue-400 hover:underline"
+                    >
+                      <span>टेस्ट लिंक</span>
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  )}
+                </div>
+                <input
+                  type="url"
+                  value={seo.socialLinks?.twitter || ""}
+                  onChange={(e) =>
+                    setSeo({
+                      ...seo,
+                      socialLinks: { ...seo.socialLinks, twitter: e.target.value },
+                    })
+                  }
+                  placeholder="https://x.com/bharatpulse"
+                  className="w-full rounded-xl border border-white/10 bg-slate-950 px-3.5 py-2.5 font-mono text-white focus:border-blue-500 focus:outline-none"
+                />
+              </div>
+
+              {/* Instagram */}
+              <div className="rounded-xl border border-white/5 bg-slate-900/60 p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <label className="flex items-center gap-2 font-bold text-white">
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 text-white text-[10px] font-bold">
+                      📷
+                    </span>
+                    <span>Instagram Profile URL</span>
+                  </label>
+                  {seo.socialLinks?.instagram && (
+                    <a
+                      href={seo.socialLinks.instagram}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-1 text-[11px] text-pink-400 hover:underline"
+                    >
+                      <span>टेस्ट लिंक</span>
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  )}
+                </div>
+                <input
+                  type="url"
+                  value={seo.socialLinks?.instagram || ""}
+                  onChange={(e) =>
+                    setSeo({
+                      ...seo,
+                      socialLinks: { ...seo.socialLinks, instagram: e.target.value },
+                    })
+                  }
+                  placeholder="https://instagram.com/bharatpulse"
+                  className="w-full rounded-xl border border-white/10 bg-slate-950 px-3.5 py-2.5 font-mono text-white focus:border-pink-500 focus:outline-none"
+                />
+              </div>
+
+              {/* YouTube Channel */}
+              <div className="rounded-xl border border-white/5 bg-slate-900/60 p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <label className="flex items-center gap-2 font-bold text-white">
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-red-600 text-white text-[10px] font-bold">
+                      ▶
+                    </span>
+                    <span>YouTube Channel URL</span>
+                  </label>
+                  {seo.socialLinks?.youtube && (
+                    <a
+                      href={seo.socialLinks.youtube}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-1 text-[11px] text-red-400 hover:underline"
+                    >
+                      <span>टेस्ट लिंक</span>
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  )}
+                </div>
+                <input
+                  type="url"
+                  value={seo.socialLinks?.youtube || ""}
+                  onChange={(e) =>
+                    setSeo({
+                      ...seo,
+                      socialLinks: { ...seo.socialLinks, youtube: e.target.value },
+                    })
+                  }
+                  placeholder="https://youtube.com/@bharatpulse"
+                  className="w-full rounded-xl border border-white/10 bg-slate-950 px-3.5 py-2.5 font-mono text-white focus:border-red-500 focus:outline-none"
+                />
+              </div>
+
+              {/* WhatsApp Community / Channel */}
+              <div className="rounded-xl border border-white/5 bg-slate-900/60 p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <label className="flex items-center gap-2 font-bold text-white">
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-600 text-white text-[10px] font-bold">
+                      💬
+                    </span>
+                    <span>WhatsApp Channel / Alerts Link</span>
+                  </label>
+                  {seo.socialLinks?.whatsapp && (
+                    <a
+                      href={seo.socialLinks.whatsapp}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-1 text-[11px] text-emerald-400 hover:underline"
+                    >
+                      <span>टेस्ट लिंक</span>
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  )}
+                </div>
+                <input
+                  type="url"
+                  value={seo.socialLinks?.whatsapp || ""}
+                  onChange={(e) =>
+                    setSeo({
+                      ...seo,
+                      socialLinks: { ...seo.socialLinks, whatsapp: e.target.value },
+                    })
+                  }
+                  placeholder="https://whatsapp.com/channel/0029Va..."
+                  className="w-full rounded-xl border border-white/10 bg-slate-950 px-3.5 py-2.5 font-mono text-white focus:border-emerald-500 focus:outline-none"
+                />
+              </div>
+
+              {/* Telegram Channel */}
+              <div className="rounded-xl border border-white/5 bg-slate-900/60 p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <label className="flex items-center gap-2 font-bold text-white">
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#229ED9] text-white text-[10px] font-bold">
+                      ✈
+                    </span>
+                    <span>Telegram News Channel URL</span>
+                  </label>
+                  {seo.socialLinks?.telegram && (
+                    <a
+                      href={seo.socialLinks.telegram}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-1 text-[11px] text-cyan-400 hover:underline"
+                    >
+                      <span>टेस्ट लिंक</span>
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  )}
+                </div>
+                <input
+                  type="url"
+                  value={seo.socialLinks?.telegram || ""}
+                  onChange={(e) =>
+                    setSeo({
+                      ...seo,
+                      socialLinks: { ...seo.socialLinks, telegram: e.target.value },
+                    })
+                  }
+                  placeholder="https://t.me/bharatpulsenews"
+                  className="w-full rounded-xl border border-white/10 bg-slate-950 px-3.5 py-2.5 font-mono text-white focus:border-cyan-500 focus:outline-none"
+                />
+              </div>
+
+              {/* LinkedIn */}
+              <div className="rounded-xl border border-white/5 bg-slate-900/60 p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <label className="flex items-center gap-2 font-bold text-white">
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#0A66C2] text-white text-[10px] font-bold">
+                      in
+                    </span>
+                    <span>LinkedIn Company Profile URL</span>
+                  </label>
+                  {seo.socialLinks?.linkedin && (
+                    <a
+                      href={seo.socialLinks.linkedin}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center gap-1 text-[11px] text-blue-400 hover:underline"
+                    >
+                      <span>टेस्ट लिंक</span>
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  )}
+                </div>
+                <input
+                  type="url"
+                  value={seo.socialLinks?.linkedin || ""}
+                  onChange={(e) =>
+                    setSeo({
+                      ...seo,
+                      socialLinks: { ...seo.socialLinks, linkedin: e.target.value },
+                    })
+                  }
+                  placeholder="https://linkedin.com/company/bharatpulse"
+                  className="w-full rounded-xl border border-white/10 bg-slate-950 px-3.5 py-2.5 font-mono text-white focus:border-blue-500 focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={saving}
+              className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 px-6 py-3 font-bold text-white shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:scale-[1.02] transition-all disabled:opacity-50 cursor-pointer"
+            >
+              <Save className="h-4 w-4" />
+              <span>{saving ? "सेव किया जा रहा है..." : "सोशल मीडिया लिंक्स सेव करें (Save Social Links)"}</span>
             </button>
           </form>
         )}

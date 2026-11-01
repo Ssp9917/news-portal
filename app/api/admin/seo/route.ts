@@ -150,7 +150,7 @@ export async function POST(req: Request) {
       Object.assign(seo, data);
       await seo.save();
     } else {
-      seo = await GlobalSeo.create(data);
+      seo = (await GlobalSeo.create(data)) as any;
     }
 
     return NextResponse.json({

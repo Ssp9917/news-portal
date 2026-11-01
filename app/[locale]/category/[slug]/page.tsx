@@ -121,9 +121,9 @@ export default async function CategoryPage({ params }: Props) {
         {/* Stories Grid */}
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {newsVideoData.length > 0 ? (
-            newsVideoData.map((news: Record<string, unknown>, idx: number) => (
+            newsVideoData.map((news: any, idx: number) => (
               <NewsCard
-                key={(news._id as string) ?? String(idx)}
+                key={news._id ? String(news._id) : String(idx)}
                 locale={locale}
                 {...news}
               />

@@ -596,10 +596,9 @@ export default function AdminUsersPage() {
                               <div className="flex items-center gap-1.5 font-bold text-white truncate max-w-[180px]">
                                 <span>{u.name || "Reader"}</span>
                                 {u.isEmailVerified && (
-                                  <CheckCircle2
-                                    className="h-3.5 w-3.5 text-emerald-400 shrink-0"
-                                    title="Email Verified"
-                                  />
+                                  <span title="Email Verified">
+                                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+                                  </span>
                                 )}
                               </div>
                               <div className="text-[11px] text-slate-400 font-mono truncate max-w-[180px]">

@@ -33,7 +33,7 @@ export async function POST(req: Request) {
       if (Array.isArray(data.footerGroups)) nav.footerGroups = data.footerGroups;
       await nav.save();
     } else {
-      nav = await NavigationConfig.create(data);
+      nav = (await NavigationConfig.create(data)) as any;
     }
 
     return NextResponse.json({
