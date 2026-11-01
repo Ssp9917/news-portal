@@ -14,7 +14,9 @@ import {
   Clock,
   Trash2,
   ExternalLink,
+  MapPin,
 } from "lucide-react";
+import { POPULAR_INDIAN_CITIES } from "@/lib/location";
 
 function EditNewsForm() {
   const router = useRouter();
@@ -52,6 +54,13 @@ function EditNewsForm() {
     videoUrl: "",
     tags: "",
     readingTime: 3,
+    location: {
+      city: "",
+      district: "",
+      state: "",
+      pinCode: "",
+      level: "national",
+    },
     seo: {
       title: "",
       description: "",
@@ -108,6 +117,13 @@ function EditNewsForm() {
             videoUrl: newsData.videoUrl || "",
             tags: Array.isArray(newsData.tags) ? newsData.tags.join(", ") : "",
             readingTime: newsData.readingTime || 3,
+            location: newsData.location || {
+              city: "",
+              district: "",
+              state: "",
+              pinCode: "",
+              level: "national",
+            },
             seo: newsData.seo || {
               title: "",
               description: "",
@@ -349,6 +365,100 @@ function EditNewsForm() {
                 onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
                 className="w-full rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-white"
               />
+            </div>
+          </div>
+
+          {/* Location & Local News Tagging */}
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl space-y-4 text-xs">
+            <div className="flex items-center gap-2">
+              <MapPin className="h-4 w-4 text-red-400" />
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300">
+                Location & Local News (स्थान / शहर)
+              </h3>
+            </div>
+
+            <div>
+              <label className="mb-1 block font-semibold text-slate-400">
+                Coverage Scope
+              </label>
+              <select
+                value={formData.location.level}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    location: { ...formData.location, level: e.target.value as any },
+                  })
+                }
+                className="w-full rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-white"
+              >
+                <option value="national">National (राष्ट्रीय - पूरे देश के लिए)</option>
+                <option value="state">State (राज्य स्तरीय)</option>
+                <option value="city">City / Local (शहर / स्थानीय न्यूज़)</option>
+                <option value="hyperlocal">Hyperlocal (वार्ड / मोहल्ला)</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="mb-1 block font-semibold text-slate-400">
+                Quick City Select (त्वरित शहर चयन)
+              </label>
+              <select
+                onChange={(e) => {
+                  const city = POPULAR_INDIAN_CITIES.find((c) => c.name === e.target.value);
+                  if (city) {
+                    setFormData({
+                      ...formData,
+                      location: {
+                        ...formData.location,
+                        city: city.name,
+                        state: city.state,
+                        level: "city",
+                      },
+                    });
+                  }
+                }}
+                className="w-full rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-white"
+              >
+                <option value="">-- Choose Indian City --</option>
+                {POPULAR_INDIAN_CITIES.map((c) => (
+                  <option key={c.name} value={c.name}>
+                    {c.nameHi} ({c.name}) — {c.stateHi}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="mb-1 block font-semibold text-slate-400">City Name</label>
+                <input
+                  type="text"
+                  value={formData.location.city}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      location: { ...formData.location, city: e.target.value },
+                    })
+                  }
+                  placeholder="e.g. Jaipur"
+                  className="w-full rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-white"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block font-semibold text-slate-400">State Name</label>
+                <input
+                  type="text"
+                  value={formData.location.state}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      location: { ...formData.location, state: e.target.value },
+                    })
+                  }
+                  placeholder="e.g. Rajasthan"
+                  className="w-full rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-white"
+                />
+              </div>
             </div>
           </div>
 

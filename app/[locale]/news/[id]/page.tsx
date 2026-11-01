@@ -23,6 +23,9 @@ import {
 
 import ReadingProgressBar from "@/components/article/ReadingProgressBar";
 import SocialShareBar from "@/components/article/SocialShareBar";
+import ArticleInteractionBar from "@/components/article/ArticleInteractionBar";
+import ArticleComments from "@/components/article/ArticleComments";
+import PromotionalBannerSlot from "@/components/promotions/PromotionalBannerSlot";
 import ArticleBodyContainer from "@/components/article/ArticleBodyContainer";
 import AdPlacement from "@/components/homepage/AdPlacement";
 import NewsletterBox from "@/components/homepage/NewsletterBox";
@@ -356,8 +359,14 @@ export default async function NewsDetailsPage({ params }: NewsDetailsPageProps) 
 
             <ViewCounter id={news._id} />
 
-            {/* Social Share Bar */}
-            <SocialShareBar title={title} url={currentFullUrl} />
+            {/* Social Share & Bookmark Bar with Auto Reading History */}
+            <ArticleInteractionBar
+              articleId={news._id}
+              title={title}
+              category={news.category}
+              image={news.image}
+              url={currentFullUrl}
+            />
           </div>
         </header>
 
@@ -377,7 +386,7 @@ export default async function NewsDetailsPage({ params }: NewsDetailsPageProps) 
             <div className="relative aspect-[16/10] w-full overflow-hidden rounded-3xl border border-slate-200/80 dark:border-white/10 bg-slate-900 shadow-xl">
               <img
                 src={news.image || "https://placehold.co/1200x800"}
-                alt={title}
+                alt={`${title} — भारत पल्स (Bharat Pulse)`}
                 className="h-full w-full object-cover"
               />
             </div>
@@ -401,6 +410,11 @@ export default async function NewsDetailsPage({ params }: NewsDetailsPageProps) 
           {/* Main Column */}
           <div className="lg:col-span-8">
             <ArticleBodyContainer contentHtml={contentHtml} />
+
+            {/* In-Article Promotional Campaign Slot */}
+            <div className="my-8">
+              <PromotionalBannerSlot placement="in_article" />
+            </div>
 
             {/* Tags Pills */}
             <div className="mt-10 border-t border-slate-200/80 dark:border-white/10 pt-6">
@@ -452,6 +466,11 @@ export default async function NewsDetailsPage({ params }: NewsDetailsPageProps) 
                     "वरिष्ठ पत्रकार एवं राजनीतिक विश्लेषक। राष्ट्रीय राजनीति, संसद और नीतिगत मामलों पर स्वतंत्र और निष्पक्ष रिपोर्टिंग।"}
                 </p>
               </div>
+            </div>
+
+            {/* Reader Comments & Moderated Discussion */}
+            <div className="mt-10">
+              <ArticleComments articleId={news._id} articleSlug={news.slug || news._id} />
             </div>
           </div>
 
@@ -533,7 +552,7 @@ export default async function NewsDetailsPage({ params }: NewsDetailsPageProps) 
                       <div className="relative aspect-[16/10] w-full overflow-hidden rounded-xl bg-slate-800 mb-3">
                         <img
                           src={item.image || "https://placehold.co/600x400"}
-                          alt={relatedTitle}
+                          alt={`${relatedTitle} — भारत पल्स (Bharat Pulse)`}
                           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                         />
                       </div>

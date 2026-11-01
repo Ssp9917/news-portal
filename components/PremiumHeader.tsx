@@ -9,8 +9,12 @@ import {
   X,
   ChevronDown,
   AlertCircle,
+  User,
+  Bookmark,
+  MapPin,
 } from "lucide-react";
 import { useI18n } from "@/components/providers/i18n-provider";
+import { useAuth } from "@/components/providers/AuthProvider";
 import { withLocale } from "@/lib/i18n/paths";
 import SearchModal from "./SearchModal";
 import BrandLogo from "./BrandLogo";
@@ -32,6 +36,7 @@ export default function PremiumHeader() {
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const pathname = usePathname();
   const { locale } = useI18n();
+  const { user, openAuthModal } = useAuth();
 
   useEffect(() => {
     fetch("/api/admin/categories")
@@ -98,6 +103,19 @@ export default function PremiumHeader() {
                 Home
               </Link>
 
+              {/* Local News Link */}
+              <Link
+                href={withLocale(locale, "/local-news")}
+                className={`flex items-center gap-1 rounded px-3 py-1.5 transition-colors ${
+                  pathname.includes("/local-news")
+                    ? "bg-[#9a1418] text-white shadow-inner"
+                    : "text-white hover:bg-[#b0181d]"
+                }`}
+              >
+                <MapPin className="h-3 w-3" />
+                <span>शहर (Local)</span>
+              </Link>
+
               {/* Categories Dropdown */}
               <div className="relative">
                 <button
@@ -152,8 +170,8 @@ export default function PremiumHeader() {
               })}
             </nav>
 
-            {/* Right: Search Icon + Subscribe Button */}
-            <div className="flex items-center gap-3">
+            {/* Right: Search Icon + User Profile / Subscribe Button */}
+            <div className="flex items-center gap-2.5">
               <button
                 type="button"
                 onClick={() => setSearchModalOpen(true)}
@@ -164,14 +182,25 @@ export default function PremiumHeader() {
                 <Search className="h-4.5 w-4.5" />
               </button>
 
-              <a
-                href="#newsletter-subscribe"
-                aria-label="न्यूज़लेटर सब्सक्राइब करें"
-                className="flex items-center gap-1.5 rounded-full border border-white/80 bg-[#9a1418] hover:bg-[#831114] px-3.5 py-1 text-xs font-bold text-white transition-all shadow-sm"
-              >
-                <AlertCircle className="h-3.5 w-3.5 fill-current text-amber-300" aria-hidden="true" />
-                <span className="tracking-wide">SUBSCRIBE</span>
-              </a>
+              {user ? (
+                <Link
+                  href="/profile"
+                  className="flex items-center gap-1.5 rounded-full bg-black/20 hover:bg-black/30 px-3 py-1 text-xs font-bold text-white transition-colors border border-white/20"
+                  aria-label="Profile"
+                >
+                  <User className="h-3.5 w-3.5 text-amber-300" />
+                  <span className="hidden sm:inline max-w-[80px] truncate">{user.name || "User"}</span>
+                </Link>
+              ) : (
+                <a
+                  href="#newsletter-subscribe"
+                  aria-label="न्यूज़लेटर सब्सक्राइब करें"
+                  className="hidden sm:flex items-center gap-1.5 rounded-full border border-white/80 bg-[#9a1418] hover:bg-[#831114] px-3.5 py-1 text-xs font-bold text-white transition-all shadow-sm"
+                >
+                  <AlertCircle className="h-3.5 w-3.5 fill-current text-amber-300" aria-hidden="true" />
+                  <span className="tracking-wide">SUBSCRIBE</span>
+                </a>
+              )}
             </div>
           </div>
         </div>
@@ -182,6 +211,40 @@ export default function PremiumHeader() {
             id="mobile-nav-drawer"
             className="lg:hidden border-t border-red-700 bg-[#b0181d] px-4 py-4 text-xs font-bold animate-in slide-in-from-top-2"
           >
+            {/* User status card inside mobile drawer */}
+            <div className="mb-3 rounded-xl bg-black/20 p-3 border border-white/10 flex items-center justify-between">
+              {user ? (
+                <div className="flex items-center gap-2.5">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#9a1418] text-white text-xs font-black">
+                    {user.name ? user.name[0].toUpperCase() : "U"}
+                  </span>
+                  <div>
+                    <div className="text-white font-bold">{user.name || "User"}</div>
+                    <Link
+                      href="/profile"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="text-[10px] text-amber-300 underline"
+                    >
+                      प्रोफ़ाइल देखें →
+                    </Link>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between w-full">
+                  <span className="text-white/90">निजीकृत खबरों के लिए:</span>
+                  <button
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      openAuthModal("login");
+                    }}
+                    className="rounded-lg bg-white px-3 py-1 text-xs font-bold text-[#c61d23] shadow"
+                  >
+                    लॉगिन करें
+                  </button>
+                </div>
+              )}
+            </div>
+
             <div className="grid grid-cols-2 gap-2">
               <Link
                 href={withLocale(locale, "/")}
@@ -189,6 +252,14 @@ export default function PremiumHeader() {
                 className="rounded-lg bg-[#9a1418] p-3 text-white text-center flex items-center justify-center min-h-[44px]"
               >
                 Home (होम)
+              </Link>
+              <Link
+                href={withLocale(locale, "/local-news")}
+                onClick={() => setMobileMenuOpen(false)}
+                className="rounded-lg bg-white/15 p-3 text-amber-300 text-center flex items-center justify-center min-h-[44px] gap-1"
+              >
+                <MapPin className="h-3.5 w-3.5" />
+                <span>शहर (Local)</span>
               </Link>
               {navItems.map((item) => (
                 <Link

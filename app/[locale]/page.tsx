@@ -3,10 +3,16 @@ import TopBar from "@/components/TopBar";
 import PremiumHeader from "@/components/PremiumHeader";
 import BreakingNews from "@/components/BreakingNews";
 import HeroSpotlight from "@/components/homepage/HeroSpotlight";
+import PersonalizedNewsFeed from "@/components/homepage/PersonalizedNewsFeed";
 import LatestNewsWithAd from "@/components/homepage/LatestNewsWithAd";
 import SectionNewsGrid from "@/components/homepage/SectionNewsGrid";
+import PollWidget from "@/components/interactive/PollWidget";
 import VideoHub from "@/components/homepage/VideoHub";
 import Footer from "@/components/Footer";
+import TopAnnouncementStrip from "@/components/promotions/TopAnnouncementStrip";
+import StickyBottomMobileBanner from "@/components/promotions/StickyBottomMobileBanner";
+import NotificationPrompt from "@/components/notifications/NotificationPrompt";
+import LocationPrompt from "@/components/location/LocationPrompt";
 import connectDB from "@/lib/db";
 import News from "@/models/News";
 import { ensureDefaultData } from "@/lib/init-defaults";
@@ -95,6 +101,9 @@ export default async function Home({ params }: Props) {
 
   return (
     <div className="min-h-screen bg-[#fcfcfc] dark:bg-[#0c0c0c] text-gray-900 dark:text-neutral-100 transition-colors">
+      {/* 0. Top Announcement Strip (Admin Broadcast / Marketing / Breaking alert) */}
+      <TopAnnouncementStrip />
+
       {/* 1. Top Utility Bar: Date, Time, Location Updated | Login/SignUp + Socials */}
       <TopBar />
 
@@ -108,6 +117,11 @@ export default async function Home({ params }: Props) {
       <main id="main-content" tabIndex={-1} className="container mx-auto max-w-7xl px-4 py-6 outline-none">
         {/* Section 1: Hero Section (3 columns: 50% Featured Taxi/Rain Card | 25% 4 Stacked Cards | 25% 1-5 Trending Box) */}
         <HeroSpotlight news={allNews} locale={locale} />
+
+        {/* Section 1.5: Personalized News Feed (For You / Latest / Trending / Local / Following) */}
+        <div className="my-8">
+          <PersonalizedNewsFeed allNews={allNews} locale={locale} />
+        </div>
 
         {/* Section 2: "ताज़ा न्यूज़" (4 News Cards with red badges + 1 Square Ad card on right) */}
         <LatestNewsWithAd news={allNews} locale={locale} title="ताज़ा न्यूज़" />
@@ -147,9 +161,19 @@ export default async function Home({ params }: Props) {
           showLoadMoreButtons={true}
         />
 
+        {/* Section 6.5: Interactive Public Opinion Poll (जनता की राय / Reader Poll) */}
+        <div className="my-10">
+          <PollWidget />
+        </div>
+
         {/* Section 7: "वीडियो अपडेट्स" (3 Video Cards with centered red Play button + 1 Newsletter Card) */}
         <VideoHub news={allNews} locale={locale} />
       </main>
+
+      {/* Dynamic Non-Intrusive Prompts */}
+      <NotificationPrompt />
+      <LocationPrompt />
+      <StickyBottomMobileBanner />
 
       {/* 4. Dark Footer (Bharat Pulse logo, contact email, Android App button, Category counts, 5 Recent news with thumbnails) */}
       <Footer />

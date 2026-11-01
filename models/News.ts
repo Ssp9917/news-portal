@@ -1,5 +1,17 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
 
+export interface INewsLocation {
+  city?: string;
+  district?: string;
+  state?: string;
+  pinCode?: string;
+  level?: "local" | "city" | "district" | "state" | "national" | "international";
+  coordinates?: {
+    lat?: number;
+    lng?: number;
+  };
+}
+
 export interface INews extends Document {
   title: string;
   titleI18n?: {
@@ -51,6 +63,7 @@ export interface INews extends Document {
   videoUrl?: string;
   videoDuration?: string;
   section?: string;
+  location?: INewsLocation;
   seo?: {
     title?: string;
     description?: string;
@@ -62,6 +75,26 @@ export interface INews extends Document {
   };
   tenantId?: string | null;
 }
+
+const NewsLocationSchema = new Schema(
+  {
+    city: { type: String, default: "", index: true },
+    district: { type: String, default: "" },
+    state: { type: String, default: "", index: true },
+    pinCode: { type: String, default: "" },
+    level: {
+      type: String,
+      enum: ["local", "city", "district", "state", "national", "international"],
+      default: "national",
+      index: true,
+    },
+    coordinates: {
+      lat: { type: Number, default: null },
+      lng: { type: Number, default: null },
+    },
+  },
+  { _id: false }
+);
 
 const NewsSchema: Schema = new Schema(
   {
@@ -113,6 +146,7 @@ const NewsSchema: Schema = new Schema(
     videoUrl: { type: String, default: "" },
     videoDuration: { type: String, default: "" },
     section: { type: String, default: "general" },
+    location: { type: NewsLocationSchema, default: () => ({}) },
     seo: {
       title: { type: String, default: "" },
       description: { type: String, default: "" },
@@ -135,6 +169,8 @@ NewsSchema.index({ category: 1, published: 1 });
 NewsSchema.index({ isBreaking: 1, published: 1 });
 NewsSchema.index({ isFeatured: 1, published: 1 });
 NewsSchema.index({ views: -1 });
+NewsSchema.index({ "location.city": 1, published: 1 });
+NewsSchema.index({ "location.state": 1, published: 1 });
 
 const News: Model<INews> =
   mongoose.models.News || mongoose.model<INews>("News", NewsSchema);

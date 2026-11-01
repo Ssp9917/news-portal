@@ -5,7 +5,8 @@ export type Role =
   | "author"
   | "seo_manager"
   | "media_manager"
-  | "viewer";
+  | "viewer"
+  | "user";
 
 export type Permission =
   | "news:create"
@@ -21,7 +22,11 @@ export type Permission =
   | "media:manage"
   | "ads:manage"
   | "seo:manage"
-  | "dashboard:view";
+  | "dashboard:view"
+  | "notifications:manage"
+  | "promotions:manage"
+  | "polls:manage"
+  | "comments:manage";
 
 const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   super_admin: [
@@ -39,6 +44,10 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "ads:manage",
     "seo:manage",
     "dashboard:view",
+    "notifications:manage",
+    "promotions:manage",
+    "polls:manage",
+    "comments:manage",
   ],
   admin: [
     "news:create",
@@ -53,6 +62,10 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "ads:manage",
     "seo:manage",
     "dashboard:view",
+    "notifications:manage",
+    "promotions:manage",
+    "polls:manage",
+    "comments:manage",
   ],
   editor: [
     "news:create",
@@ -61,6 +74,8 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "category:manage",
     "media:manage",
     "dashboard:view",
+    "comments:manage",
+    "polls:manage",
   ],
   author: [
     "news:create",
@@ -80,6 +95,7 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   viewer: [
     "dashboard:view",
   ],
+  user: [],
 };
 
 export function hasPermission(role: Role, permission: Permission): boolean {
@@ -98,6 +114,7 @@ export const ROLE_LABELS: Record<Role, string> = {
   seo_manager: "SEO Manager",
   media_manager: "Media Manager",
   viewer: "Viewer",
+  user: "Registered Reader",
 };
 
 export const ROLE_COLORS: Record<Role, string> = {
@@ -108,4 +125,5 @@ export const ROLE_COLORS: Record<Role, string> = {
   seo_manager: "bg-cyan-100 text-cyan-800 dark:bg-cyan-900/40 dark:text-cyan-300 border border-cyan-500/20",
   media_manager: "bg-pink-100 text-pink-800 dark:bg-pink-900/40 dark:text-pink-300 border border-pink-500/20",
   viewer: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 border border-gray-500/20",
+  user: "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200 border border-slate-500/20",
 };

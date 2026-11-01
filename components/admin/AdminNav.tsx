@@ -19,6 +19,7 @@ import {
   Menu,
   X,
   Sparkles,
+  Bell,
 } from "lucide-react";
 import { useState } from "react";
 import type { Role } from "@/lib/auth/rbac";
@@ -85,6 +86,18 @@ export default function AdminNav({ currentUser }: AdminNavProps) {
       href: "/admin/advertisements",
       icon: Megaphone,
       badge: "AdSense",
+    },
+    {
+      label: "Push Notifications",
+      href: "/admin/notifications",
+      icon: Bell,
+      badge: "FCM",
+    },
+    {
+      label: "Promotion Banners",
+      href: "/admin/promotions",
+      icon: Sparkles,
+      badge: "Marketing",
     },
     {
       label: "SEO Control Panel",

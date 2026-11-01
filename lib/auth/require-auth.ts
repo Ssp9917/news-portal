@@ -15,11 +15,13 @@ export function authenticateRequest(
   const authHeader = req.headers.get("authorization");
   let token = getTokenFromHeader(authHeader);
 
-  // If no auth header, check cookies
+  // If no auth header, check cookies (both admin_token and auth_token supported)
   if (!token) {
     const cookieHeader = req.headers.get("cookie");
     if (cookieHeader) {
-      const match = cookieHeader.match(/admin_token=([^;]+)/);
+      const match =
+        cookieHeader.match(/admin_token=([^;]+)/) ||
+        cookieHeader.match(/auth_token=([^;]+)/);
       if (match) token = match[1];
     }
   }

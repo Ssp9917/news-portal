@@ -8,6 +8,10 @@ import "@/style/globals.css";
 import StoreProvider from "./StoreProvider";
 import { AppThemeProvider } from "@/components/providers/theme-provider";
 import ThemeStyleInjector from "@/components/providers/ThemeStyleInjector";
+import { AuthProvider } from "@/components/providers/AuthProvider";
+import AuthModal from "@/components/auth/AuthModal";
+import OfflineBanner from "@/components/offline/OfflineBanner";
+import PwaRegistrar from "@/components/providers/PwaRegistrar";
 import { getSiteUrl } from "@/lib/site-url";
 import { defaultLocale, isLocale } from "@/lib/i18n/config";
 import connectDB from "@/lib/db";
@@ -210,6 +214,13 @@ export default async function RootLayout({
   return (
     <html lang={locale} suppressHydrationWarning>
       <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#c61d23" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="Bharat Pulse" />
+        <link rel="apple-touch-icon" href="/favicon.svg" />
         <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://images.unsplash.com" />
         <link rel="preconnect" href="https://placehold.co" crossOrigin="anonymous" />
@@ -235,7 +246,12 @@ export default async function RootLayout({
         </a>
 
         <AppThemeProvider>
-          <StoreProvider>{children}</StoreProvider>
+          <AuthProvider>
+            <OfflineBanner />
+            <PwaRegistrar />
+            <StoreProvider>{children}</StoreProvider>
+            <AuthModal />
+          </AuthProvider>
         </AppThemeProvider>
         {process.env.NODE_ENV === "production" && gaId && <GoogleAnalytics gaId={gaId} />}
         {process.env.NODE_ENV === "production" && gtmId && <GoogleTagManager gtmId={gtmId} />}

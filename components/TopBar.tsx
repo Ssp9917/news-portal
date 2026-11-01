@@ -3,11 +3,13 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useI18n } from "@/components/providers/i18n-provider";
+import { useAuth } from "@/components/providers/AuthProvider";
 import LocaleSwitcher from "./LocaleSwitcher";
 import ThemeToggle from "./ThemeToggle";
 
 export default function TopBar() {
   const { locale } = useI18n();
+  const { user, openAuthModal } = useAuth();
   const [dateStr, setDateStr] = useState("Sat, Oct 31, 2026");
   const [timeStr, setTimeStr] = useState("10:30 PM");
 
@@ -54,13 +56,37 @@ export default function TopBar() {
 
         {/* Right: Login/SignUp + Social Media Circular Icons */}
         <div className="flex items-center gap-3">
-          <Link
-            href="/admin"
-            className="hover:text-[#c61d23] text-gray-800 dark:text-neutral-200 transition-colors font-bold"
-            aria-label="Admin CMS Login or Sign Up"
-          >
-            Login / Sign Up
-          </Link>
+          {user ? (
+            <div className="flex items-center gap-2">
+              <Link
+                href="/profile"
+                className="flex items-center gap-1.5 hover:text-[#c61d23] text-gray-800 dark:text-neutral-200 transition-colors font-bold"
+                aria-label="User Profile"
+              >
+                <span className="flex h-4.5 w-4.5 items-center justify-center rounded-full bg-[#c61d23] text-white text-[9px] font-black">
+                  {user.name ? user.name[0].toUpperCase() : "U"}
+                </span>
+                <span className="truncate max-w-[120px]">{user.name || "खाता (Account)"}</span>
+              </Link>
+              {user.isStaff && (
+                <Link
+                  href="/admin"
+                  className="rounded bg-red-100 dark:bg-red-950/60 px-1.5 py-0.5 text-[9px] font-black text-[#c61d23] dark:text-red-400 hover:underline"
+                >
+                  ADMIN
+                </Link>
+              )}
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => openAuthModal("login")}
+              className="hover:text-[#c61d23] text-gray-800 dark:text-neutral-200 transition-colors font-bold cursor-pointer"
+              aria-label="Login or Sign Up"
+            >
+              Login / Sign Up
+            </button>
+          )}
 
           <span className="text-gray-300 dark:text-neutral-700" aria-hidden="true">
             |

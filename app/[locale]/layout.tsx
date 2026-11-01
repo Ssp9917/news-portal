@@ -4,6 +4,7 @@ import { I18nProvider } from "@/components/providers/i18n-provider";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { isLocale, locales, type Locale } from "@/lib/i18n/config";
 import { getSiteUrl } from "@/lib/site-url";
+import MobileBottomNav from "@/components/mobile/MobileBottomNav";
 
 type Props = {
   children: React.ReactNode;
@@ -45,7 +46,10 @@ export default async function LocaleLayout({ children, params }: Props) {
 
   return (
     <I18nProvider locale={locale} dictionary={dictionary as Record<string, unknown>}>
-      <div className={fontClass}>{children}</div>
+      <div className={`${fontClass} pb-16 md:pb-0 min-h-screen`}>
+        {children}
+        <MobileBottomNav />
+      </div>
     </I18nProvider>
   );
 }

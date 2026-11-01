@@ -3,6 +3,7 @@
 
 import { useRef, useState } from "react";
 import Image from "next/image";
+import { compressVideo } from "@/lib/media/video-compressor";
 
 type MediaType = "image" | "video";
 
@@ -40,7 +41,19 @@ export default function MediaUpload({
 
     try {
       const fd = new FormData();
-      fd.append("file", file);
+      let fileToUpload = file;
+      if (type === "video" || file.type.startsWith("video/")) {
+        try {
+          fileToUpload = await compressVideo(file, {
+            maxWidth: 1280,
+            maxHeight: 720,
+            bitrate: 1_200_000,
+          });
+        } catch {
+          fileToUpload = file;
+        }
+      }
+      fd.append("file", fileToUpload);
       fd.append("type", type);
 
       const res = await fetch("/api/upload", { method: "POST", body: fd });
