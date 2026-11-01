@@ -1,4 +1,5 @@
 import TopBar from "@/components/TopBar";
+import LiveMarketWeatherBar from "@/components/market/LiveMarketWeatherBar";
 import PremiumHeader from "@/components/PremiumHeader";
 import Footer from "@/components/Footer";
 import connectDB from "@/lib/db";
@@ -268,6 +269,7 @@ export default async function NewsDetailsPage({ params }: NewsDetailsPageProps) 
 
       {/* 2. Top Info Bar & Header */}
       <TopBar />
+      <LiveMarketWeatherBar />
       <PremiumHeader />
 
       <main className="container mx-auto max-w-7xl px-4 py-8">

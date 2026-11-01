@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import TopBar from "@/components/TopBar";
+import LiveMarketWeatherBar from "@/components/market/LiveMarketWeatherBar";
 import PremiumHeader from "@/components/PremiumHeader";
 import BreakingNews from "@/components/BreakingNews";
 import HeroSpotlight from "@/components/homepage/HeroSpotlight";
@@ -120,6 +121,9 @@ export default async function Home({ params }: Props) {
 
       {/* 1. Top Utility Bar: Date, Time, Location Updated | Login/SignUp + Socials */}
       <TopBar />
+
+      {/* 1.5. Live Financial Market & City Weather Ticker */}
+      <LiveMarketWeatherBar />
 
       {/* 2. Main Red Header: Bharat Pulse logo, Home, Categories ▾, Dynamic categories & links, Search, ! SUBSCRIBE */}
       <PremiumHeader />

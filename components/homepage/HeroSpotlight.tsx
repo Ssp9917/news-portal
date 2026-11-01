@@ -1,7 +1,8 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Flame } from "lucide-react";
+import { Flame, ChevronLeft, ChevronRight } from "lucide-react";
 import { withLocale } from "@/lib/i18n/paths";
 import type { Locale } from "@/lib/i18n/config";
 import {
@@ -29,18 +30,52 @@ interface NewsItem {
 interface HeroSpotlightProps {
   news: NewsItem[];
   locale: Locale;
+  title?: string;
+  subtitle?: string;
 }
 
 export default function HeroSpotlight({ news, locale }: HeroSpotlightProps) {
   if (!news || news.length === 0) return null;
 
-  // 1. Featured story for Left Column
-  const featured =
-    news.find((n) => n.isFeatured || n.category === "मौसम") || news[0];
+  // 1. Featured stories pool for Left Column Auto Slider (up to 5 top stories)
+  const featuredStories = (() => {
+    const explicit = news.filter((n) => n.isFeatured);
+    const others = news.filter((n) => !n.isFeatured);
+    const combined = [...explicit, ...others];
+    return combined.slice(0, 5);
+  })();
 
-  // 2. Middle Column: 4 stacked cards
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+
+  // Auto-slide interval: 4.5 seconds per slide
+  useEffect(() => {
+    if (isPaused || featuredStories.length <= 1) return;
+
+    const timer = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % featuredStories.length);
+    }, 4500);
+
+    return () => clearInterval(timer);
+  }, [isPaused, featuredStories.length]);
+
+  const activeFeatured = featuredStories[currentIndex] || news[0];
+
+  const handlePrev = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setCurrentIndex((prev) => (prev === 0 ? featuredStories.length - 1 : prev - 1));
+  };
+
+  const handleNext = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setCurrentIndex((prev) => (prev + 1) % featuredStories.length);
+  };
+
+  // 2. Middle Column: 4 stacked cards (exclude currently active featured story)
   const middleStories = news
-    .filter((n) => n._id !== featured._id)
+    .filter((n) => n._id !== activeFeatured._id)
     .slice(0, 4);
 
   // 3. Right Column: 5 numbered Trending Stories
@@ -49,26 +84,32 @@ export default function HeroSpotlight({ news, locale }: HeroSpotlightProps) {
     .slice(0, 5);
 
   const featuredTitle =
-    getLocalizedTitle(featured as any, locale) || featured.title;
+    getLocalizedTitle(activeFeatured as any, locale) || activeFeatured.title;
   const featuredHref = withLocale(
     locale,
-    `/news/${featured.slug || featured._id}`
+    `/news/${activeFeatured.slug || activeFeatured._id}`
   );
 
   return (
     <section className="mb-10" aria-label="मुख्य और ट्रेंडिंग समाचार">
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-        {/* ── Left Column (approx 50% / 6 cols): Large Featured Card ── */}
-        <div className="lg:col-span-6">
+        {/* ── Left Column (approx 50% / 6 cols): Auto-Sliding Featured Carousel ── */}
+        <div
+          className="lg:col-span-6 group relative"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+        >
           <Link
             href={featuredHref}
-            className="group relative block overflow-hidden rounded-xl border border-gray-200 dark:border-neutral-800 bg-neutral-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#c61d23]"
+            className="relative block overflow-hidden rounded-2xl border border-gray-200 dark:border-neutral-800 bg-neutral-900 shadow-md focus:outline-none focus:ring-2 focus:ring-[#c61d23]"
             aria-label={`विशेष समाचार: ${featuredTitle}`}
           >
-            <div className="relative aspect-[16/11] w-full overflow-hidden bg-neutral-800">
+            <div className="relative aspect-[16/11] w-full overflow-hidden bg-neutral-950">
+              {/* Main Image with smooth keyframe transition */}
               <img
+                key={activeFeatured._id}
                 src={
-                  featured.image ||
+                  activeFeatured.image ||
                   "https://images.unsplash.com/photo-1514565131-fce0801e5785?w=1000&auto=format&fit=crop&q=80"
                 }
                 alt={featuredTitle}
@@ -77,21 +118,55 @@ export default function HeroSpotlight({ news, locale }: HeroSpotlightProps) {
                 loading="eager"
                 decoding="async"
                 fetchPriority="high"
-                className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                className="h-full w-full object-cover transition-all duration-700 group-hover:scale-105 animate-in fade-in zoom-in-95"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/45 to-transparent" />
 
-              {/* Red Pill Category Badge */}
-              <div className="absolute top-4 left-4">
-                <span className="rounded-full bg-[#c61d23] px-3 py-0.5 text-[11px] font-bold uppercase tracking-wider text-white shadow">
-                  {featured.category || "मौसम"}
+              {/* Red Pill Category Badge & Live Slide Counter */}
+              <div className="absolute top-4 left-4 flex items-center gap-2 z-10">
+                <span className="rounded-full bg-[#c61d23] px-3 py-0.5 text-[11px] font-extrabold uppercase tracking-wider text-white shadow-md">
+                  {activeFeatured.category || "विशेष खबर"}
+                </span>
+                <span className="rounded-full bg-black/60 backdrop-blur-md px-2 py-0.5 text-[10px] font-mono font-bold text-white/90 border border-white/20">
+                  {currentIndex + 1} / {featuredStories.length}
                 </span>
               </div>
 
+              {/* Progress Countdown Bar */}
+              <div className="absolute top-0 inset-x-0 h-1 bg-white/10 z-10">
+                <div
+                  key={`prog-${currentIndex}-${isPaused}`}
+                  className={`h-full bg-gradient-to-r from-red-600 to-amber-400 ${
+                    !isPaused ? "animate-[progress_4.5s_linear_forwards]" : ""
+                  }`}
+                  style={{ width: isPaused ? "100%" : undefined }}
+                />
+              </div>
+
+              {/* Left Navigation Arrow */}
+              <button
+                type="button"
+                onClick={handlePrev}
+                className="absolute left-3 top-1/2 -translate-y-1/2 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-md opacity-80 sm:opacity-0 sm:group-hover:opacity-100 hover:bg-[#c61d23] hover:scale-110 transition-all cursor-pointer shadow-lg border border-white/20"
+                aria-label="पिछली खबर (Previous Slide)"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+
+              {/* Right Navigation Arrow */}
+              <button
+                type="button"
+                onClick={handleNext}
+                className="absolute right-3 top-1/2 -translate-y-1/2 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-white backdrop-blur-md opacity-80 sm:opacity-0 sm:group-hover:opacity-100 hover:bg-[#c61d23] hover:scale-110 transition-all cursor-pointer shadow-lg border border-white/20"
+                aria-label="अगली खबर (Next Slide)"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
+
               {/* Bottom Content Overlay */}
-              <div className="absolute bottom-0 inset-x-0 p-5 sm:p-6">
+              <div className="absolute bottom-0 inset-x-0 p-5 sm:p-6 z-10">
                 <h2
-                  className="text-xl font-bold leading-snug text-white sm:text-2xl group-hover:text-red-200 transition-colors"
+                  className="text-xl font-bold leading-snug text-white sm:text-2xl group-hover:text-red-200 transition-colors line-clamp-2"
                   style={{
                     fontFamily:
                       locale === "hi"
@@ -103,17 +178,39 @@ export default function HeroSpotlight({ news, locale }: HeroSpotlightProps) {
                 </h2>
 
                 <div className="mt-2.5 flex items-center gap-3 text-[11px] text-gray-200 font-medium">
-                  <span>📅 {featured.date}</span>
+                  <span>📅 {activeFeatured.date}</span>
                   <span>•</span>
-                  <span>{featured.author || "संवाददाता"}</span>
+                  <span>{activeFeatured.author || "संवाददाता"}</span>
+                  {activeFeatured.readingTime && (
+                    <>
+                      <span>•</span>
+                      <span>~{activeFeatured.readingTime} min read</span>
+                    </>
+                  )}
                 </div>
 
-                {/* Indicators */}
-                <div className="mt-4 flex items-center justify-center gap-1.5" aria-hidden="true">
-                  <span className="h-2 w-2 rounded-full bg-red-600" />
-                  <span className="h-1.5 w-1.5 rounded-full bg-white/60" />
-                  <span className="h-1.5 w-1.5 rounded-full bg-white/60" />
-                  <span className="h-1.5 w-1.5 rounded-full bg-white/60" />
+                {/* Clickable Pagination Dots */}
+                <div
+                  className="mt-4 flex items-center justify-center gap-1.5"
+                  aria-label="Slider Controls"
+                >
+                  {featuredStories.map((_, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setCurrentIndex(idx);
+                      }}
+                      className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
+                        idx === currentIndex
+                          ? "w-7 bg-[#c61d23] shadow-md ring-1 ring-white/50"
+                          : "w-2 bg-white/60 hover:bg-white"
+                      }`}
+                      aria-label={`Slide ${idx + 1}`}
+                    />
+                  ))}
                 </div>
               </div>
             </div>
