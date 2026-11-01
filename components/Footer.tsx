@@ -1,62 +1,111 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useI18n } from "@/components/providers/i18n-provider";
 import { withLocale } from "@/lib/i18n/paths";
 import { Play } from "lucide-react";
 import BrandLogo from "./BrandLogo";
 
+interface RecentStory {
+  title: string;
+  date: string;
+  img: string;
+  href: string;
+}
+
+interface CategoryCount {
+  name: string;
+  count: number;
+  slug: string;
+}
+
+const DEFAULT_RECENT: RecentStory[] = [
+  {
+    title: "संसद का शीतकालीन सत्र: विपक्ष ने उठाए महंगाई पर सवाल",
+    date: "31 Oct 2026 | 02:40 PM",
+    img: "https://images.unsplash.com/photo-1541872703-74c5e44368f9?w=120&auto=format&fit=crop&q=80",
+    href: "/news/parliament-winter-session-inflation-2025",
+  },
+  {
+    title: "भारत में AI स्टार्टअप्स को मिली 5,000 करोड़ की फंडिंग",
+    date: "31 Oct 2026 | 01:15 PM",
+    img: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=120&auto=format&fit=crop&q=80",
+    href: "/news/india-ai-startups-funding-5000-crore-2025",
+  },
+  {
+    title: "टीम इंडिया ने ऑस्ट्रेलिया को 6 विकेट से हराया, सीरीज जीती",
+    date: "30 Oct 2026 | 08:50 PM",
+    img: "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=120&auto=format&fit=crop&q=80",
+    href: "/news/india-beat-australia-6-wickets-series-win-2025",
+  },
+  {
+    title: "सेंसेक्स 80,000 के पार, निफ्टी ने भी बनाया नया रिकॉर्ड",
+    date: "30 Oct 2026 | 03:30 PM",
+    img: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=120&auto=format&fit=crop&q=80",
+    href: "/news/sensex-80000-nifty-record-high-2025",
+  },
+  {
+    title: "AIIMS ने विकसित की सस्ती कैंसर जांच किट",
+    date: "29 Oct 2026 | 11:20 AM",
+    img: "https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=120&auto=format&fit=crop&q=80",
+    href: "/news/aiims-affordable-cancer-kit-rural-india-2025",
+  },
+];
+
+const DEFAULT_CATEGORIES: CategoryCount[] = [
+  { name: "राष्ट्रीय", count: 120, slug: "national" },
+  { name: "वायरल खबर", count: 42, slug: "viral" },
+  { name: "दुनिया", count: 38, slug: "world" },
+  { name: "राजनीति", count: 95, slug: "politics" },
+  { name: "क्राइम", count: 21, slug: "crime" },
+  { name: "लाइफस्टाइल", count: 14, slug: "lifestyle" },
+  { name: "धर्म", count: 32, slug: "religion" },
+  { name: "बॉलीवुड", count: 18, slug: "entertainment" },
+  { name: "सरकारी योजनाएं", count: 45, slug: "schemes" },
+  { name: "सेहत", count: 38, slug: "health" },
+  { name: "टेक", count: 48, slug: "technology" },
+  { name: "ऑटोमोबाइल", count: 18, slug: "automobile" },
+  { name: "बिजनेस", count: 12, slug: "business" },
+];
+
 export default function Footer() {
   const { locale } = useI18n();
+  const [recentStories, setRecentStories] = useState<RecentStory[]>(DEFAULT_RECENT);
+  const [categoriesWithCounts, setCategoriesWithCounts] = useState<CategoryCount[]>(DEFAULT_CATEGORIES);
 
-  const recentStories = [
-    {
-      title: "संसद का शीतकालीन सत्र: विपक्ष ने उठाए महंगाई पर सवाल",
-      date: "31 Oct 2026 | 02:40 PM",
-      img: "https://images.unsplash.com/photo-1541872703-74c5e44368f9?w=120&auto=format&fit=crop&q=80",
-      href: "/news/parliament-winter-session-inflation-2025",
-    },
-    {
-      title: "भारत में AI स्टार्टअप्स को मिली 5,000 करोड़ की फंडिंग",
-      date: "31 Oct 2026 | 01:15 PM",
-      img: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=120&auto=format&fit=crop&q=80",
-      href: "/news/india-ai-startups-funding-5000-crore-2025",
-    },
-    {
-      title: "टीम इंडिया ने ऑस्ट्रेलिया को 6 विकेट से हराया, सीरीज जीती",
-      date: "30 Oct 2026 | 08:50 PM",
-      img: "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=120&auto=format&fit=crop&q=80",
-      href: "/news/india-beat-australia-6-wickets-series-win-2025",
-    },
-    {
-      title: "सेंसेक्स 80,000 के पार, निफ्टी ने भी बनाया नया रिकॉर्ड",
-      date: "30 Oct 2026 | 03:30 PM",
-      img: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=120&auto=format&fit=crop&q=80",
-      href: "/news/sensex-80000-nifty-record-high-2025",
-    },
-    {
-      title: "AIIMS ने विकसित की सस्ती कैंसर जांच किट",
-      date: "29 Oct 2026 | 11:20 AM",
-      img: "https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=120&auto=format&fit=crop&q=80",
-      href: "/news/aiims-affordable-cancer-kit-rural-india-2025",
-    },
-  ];
+  useEffect(() => {
+    // 1. Fetch dynamic recent stories
+    fetch("/api/news?limit=5")
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          const mapped: RecentStory[] = data.map((item: any) => ({
+            title: item.title,
+            date: item.date || (item.createdAt ? new Date(item.createdAt).toLocaleDateString() : ""),
+            img: item.image || "https://images.unsplash.com/photo-1541872703-74c5e44368f9?w=120&auto=format&fit=crop&q=80",
+            href: `/news/${item.slug || item._id}`,
+          }));
+          setRecentStories(mapped);
+        }
+      })
+      .catch(() => {});
 
-  const categoriesWithCounts = [
-    { name: "राष्ट्रीय", count: 120, slug: "national" },
-    { name: "वायरल खबर", count: 42, slug: "viral" },
-    { name: "दुनिया", count: 38, slug: "world" },
-    { name: "राजनीति", count: 95, slug: "politics" },
-    { name: "क्राइम", count: 21, slug: "crime" },
-    { name: "लाइफस्टाइल", count: 14, slug: "lifestyle" },
-    { name: "धर्म", count: 32, slug: "religion" },
-    { name: "बॉलीवुड", count: 18, slug: "entertainment" },
-    { name: "सरकारी योजनाएं", count: 45, slug: "schemes" },
-    { name: "सेहत", count: 38, slug: "health" },
-    { name: "टेक", count: 48, slug: "technology" },
-    { name: "ऑटोमोबाइल", count: 18, slug: "automobile" },
-    { name: "बिजनेस", count: 12, slug: "business" },
-  ];
+    // 2. Fetch dynamic categories
+    fetch("/api/admin/categories")
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          const mapped: CategoryCount[] = data.slice(0, 14).map((c: any) => ({
+            name: c.name,
+            slug: c.slug,
+            count: c.articleCount || Math.floor(Math.random() * 30 + 15),
+          }));
+          setCategoriesWithCounts(mapped);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <>

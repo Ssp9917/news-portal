@@ -26,7 +26,8 @@ export type Permission =
   | "notifications:manage"
   | "promotions:manage"
   | "polls:manage"
-  | "comments:manage";
+  | "comments:manage"
+  | "users:manage";
 
 const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   super_admin: [
@@ -48,6 +49,7 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "promotions:manage",
     "polls:manage",
     "comments:manage",
+    "users:manage",
   ],
   admin: [
     "news:create",
@@ -66,6 +68,7 @@ const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     "promotions:manage",
     "polls:manage",
     "comments:manage",
+    "users:manage",
   ],
   editor: [
     "news:create",

@@ -20,6 +20,7 @@ import {
   X,
   Sparkles,
   Bell,
+  Users,
 } from "lucide-react";
 import { useState } from "react";
 import type { Role } from "@/lib/auth/rbac";
@@ -50,6 +51,12 @@ export default function AdminNav({ currentUser }: AdminNavProps) {
       href: "/admin/dashboard?tab=articles",
       icon: FileText,
       badge: "News",
+    },
+    {
+      label: "Users & Readers",
+      href: "/admin/users",
+      icon: Users,
+      badge: "Directory",
     },
     {
       label: "Live Theme Editor",

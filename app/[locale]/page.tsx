@@ -8,6 +8,7 @@ import LatestNewsWithAd from "@/components/homepage/LatestNewsWithAd";
 import SectionNewsGrid from "@/components/homepage/SectionNewsGrid";
 import PollWidget from "@/components/interactive/PollWidget";
 import VideoHub from "@/components/homepage/VideoHub";
+import DynamicHomepageRenderer from "@/components/homepage/DynamicHomepageRenderer";
 import Footer from "@/components/Footer";
 import TopAnnouncementStrip from "@/components/promotions/TopAnnouncementStrip";
 import StickyBottomMobileBanner from "@/components/promotions/StickyBottomMobileBanner";
@@ -15,6 +16,7 @@ import NotificationPrompt from "@/components/notifications/NotificationPrompt";
 import LocationPrompt from "@/components/location/LocationPrompt";
 import connectDB from "@/lib/db";
 import News from "@/models/News";
+import HomepageConfig from "@/models/HomepageConfig";
 import { ensureDefaultData } from "@/lib/init-defaults";
 import { isLocale, locales, type Locale } from "@/lib/i18n/config";
 import { getSiteUrl } from "@/lib/site-url";
@@ -48,15 +50,21 @@ async function getHomepageData() {
     await connectDB();
     await ensureDefaultData();
 
-    const newsDocs = await News.find({ published: { $ne: false } })
-      .sort({ createdAt: -1 })
-      .limit(30)
-      .lean();
+    const [newsDocs, configDoc] = await Promise.all([
+      News.find({ published: { $ne: false } })
+        .sort({ createdAt: -1 })
+        .limit(40)
+        .lean(),
+      HomepageConfig.findOne().sort({ updatedAt: -1 }).lean(),
+    ]);
 
-    return JSON.parse(JSON.stringify(newsDocs));
+    return {
+      allNews: JSON.parse(JSON.stringify(newsDocs)),
+      homepageConfig: configDoc ? JSON.parse(JSON.stringify(configDoc)) : null,
+    };
   } catch (error: unknown) {
     console.error("Failed to fetch homepage data:", error);
-    return [];
+    return { allNews: [], homepageConfig: null };
   }
 }
 
@@ -65,7 +73,13 @@ export default async function Home({ params }: Props) {
   if (!isLocale(raw)) notFound();
   const locale = raw as Locale;
 
-  const allNews = await getHomepageData();
+  const { allNews, homepageConfig } = await getHomepageData();
+
+  const hasCustomSections =
+    homepageConfig &&
+    Array.isArray(homepageConfig.sections) &&
+    homepageConfig.sections.length > 0 &&
+    homepageConfig.isPublished !== false;
 
   // Curate news for each specific editorial beat matching the reference layout
   const sportsNews = allNews.filter(
@@ -107,7 +121,7 @@ export default async function Home({ params }: Props) {
       {/* 1. Top Utility Bar: Date, Time, Location Updated | Login/SignUp + Socials */}
       <TopBar />
 
-      {/* 2. Main Red Header: Bharat Pulse logo, Home, Categories ▾, Hindi categories, Search, ! SUBSCRIBE */}
+      {/* 2. Main Red Header: Bharat Pulse logo, Home, Categories ▾, Dynamic categories & links, Search, ! SUBSCRIBE */}
       <PremiumHeader />
 
       {/* 3. Breaking News Ticker: ! BREAKING NEWS red pill, scrolling text, < > arrows */}
@@ -115,59 +129,81 @@ export default async function Home({ params }: Props) {
 
       {/* Main Container with landmark id for skip-to-content accessibility */}
       <main id="main-content" tabIndex={-1} className="container mx-auto max-w-7xl px-4 py-6 outline-none">
-        {/* Section 1: Hero Section (3 columns: 50% Featured Taxi/Rain Card | 25% 4 Stacked Cards | 25% 1-5 Trending Box) */}
-        <HeroSpotlight news={allNews} locale={locale} />
+        {hasCustomSections ? (
+          /* Dynamic Admin Homepage Builder Sections */
+          <div className="space-y-8">
+            <div className="my-2">
+              <PersonalizedNewsFeed allNews={allNews} locale={locale} />
+            </div>
 
-        {/* Section 1.5: Personalized News Feed (For You / Latest / Trending / Local / Following) */}
-        <div className="my-8">
-          <PersonalizedNewsFeed allNews={allNews} locale={locale} />
-        </div>
+            <DynamicHomepageRenderer
+              sections={homepageConfig.sections}
+              news={allNews}
+              locale={locale}
+            />
 
-        {/* Section 2: "ताज़ा न्यूज़" (4 News Cards with red badges + 1 Square Ad card on right) */}
-        <LatestNewsWithAd news={allNews} locale={locale} title="ताज़ा न्यूज़" />
+            <div className="my-10">
+              <PollWidget />
+            </div>
+          </div>
+        ) : (
+          /* Curated Default Layout */
+          <>
+            {/* Section 1: Hero Section (3 columns: 50% Featured Taxi/Rain Card | 25% 4 Stacked Cards | 25% 1-5 Trending Box) */}
+            <HeroSpotlight news={allNews} locale={locale} />
 
-        {/* Section 3: "कैटेगरी अनुसार खबरें (News By Categories)" */}
-        <LatestNewsWithAd
-          news={allNews.slice(2)}
-          locale={locale}
-          title="कैटेगरी अनुसार खबरें (News By Categories)"
-        />
+            {/* Section 1.5: Personalized News Feed (For You / Latest / Trending / Local / Following) */}
+            <div className="my-8">
+              <PersonalizedNewsFeed allNews={allNews} locale={locale} />
+            </div>
 
-        {/* Section 4: "🏏 खेल" (Sports News - 4 Cards Grid) */}
-        <SectionNewsGrid
-          iconEmoji="🏏"
-          title="खेल"
-          categorySlug="sports"
-          news={fillToFour(sportsNews)}
-          locale={locale}
-        />
+            {/* Section 2: "ताज़ा न्यूज़" (4 News Cards with red badges + 1 Square Ad card on right) */}
+            <LatestNewsWithAd news={allNews} locale={locale} title="ताज़ा न्यूज़" />
 
-        {/* Section 5: "📈 बिजनेस" (Business News - 4 Cards Grid with stock market charts) */}
-        <SectionNewsGrid
-          iconEmoji="📈"
-          title="बिजनेस"
-          categorySlug="business"
-          news={fillToFour(businessNews)}
-          locale={locale}
-        />
+            {/* Section 3: "कैटेगरी अनुसार खबरें (News By Categories)" */}
+            <LatestNewsWithAd
+              news={allNews.slice(2)}
+              locale={locale}
+              title="कैटेगरी अनुसार खबरें (News By Categories)"
+            />
 
-        {/* Section 6: "💻 टेक्नोलॉजी" (Technology News - 4 Cards Grid + 2 Bottom Load More buttons) */}
-        <SectionNewsGrid
-          iconEmoji="💻"
-          title="टेक्नोलॉजी"
-          categorySlug="technology"
-          news={fillToFour(techNews)}
-          locale={locale}
-          showLoadMoreButtons={true}
-        />
+            {/* Section 4: "🏏 खेल" (Sports News - 4 Cards Grid) */}
+            <SectionNewsGrid
+              iconEmoji="🏏"
+              title="खेल"
+              categorySlug="sports"
+              news={fillToFour(sportsNews)}
+              locale={locale}
+            />
 
-        {/* Section 6.5: Interactive Public Opinion Poll (जनता की राय / Reader Poll) */}
-        <div className="my-10">
-          <PollWidget />
-        </div>
+            {/* Section 5: "📈 बिजनेस" (Business News - 4 Cards Grid with stock market charts) */}
+            <SectionNewsGrid
+              iconEmoji="📈"
+              title="बिजनेस"
+              categorySlug="business"
+              news={fillToFour(businessNews)}
+              locale={locale}
+            />
 
-        {/* Section 7: "वीडियो अपडेट्स" (3 Video Cards with centered red Play button + 1 Newsletter Card) */}
-        <VideoHub news={allNews} locale={locale} />
+            {/* Section 6: "💻 टेक्नोलॉजी" (Technology News - 4 Cards Grid + 2 Bottom Load More buttons) */}
+            <SectionNewsGrid
+              iconEmoji="💻"
+              title="टेक्नोलॉजी"
+              categorySlug="technology"
+              news={fillToFour(techNews)}
+              locale={locale}
+              showLoadMoreButtons={true}
+            />
+
+            {/* Section 6.5: Interactive Public Opinion Poll (जनता की राय / Reader Poll) */}
+            <div className="my-10">
+              <PollWidget />
+            </div>
+
+            {/* Section 7: "वीडियो अपडेट्स" (3 Video Cards with centered red Play button + 1 Newsletter Card) */}
+            <VideoHub news={allNews} locale={locale} />
+          </>
+        )}
       </main>
 
       {/* Dynamic Non-Intrusive Prompts */}

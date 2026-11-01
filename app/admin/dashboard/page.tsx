@@ -23,6 +23,7 @@ import {
   CheckCircle2,
   Clock,
   User,
+  Users,
   Zap,
 } from "lucide-react";
 import type { Role } from "@/lib/auth/rbac";
@@ -325,7 +326,20 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Quick Management Shortcuts */}
-        <div className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-5">
+          <Link
+            href="/admin/users"
+            className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3.5 hover:border-red-500/40 hover:bg-red-950/20 transition-all"
+          >
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-red-600/20 text-red-400">
+              <Users className="h-4 w-4" />
+            </div>
+            <div>
+              <p className="text-xs font-bold text-white">Users & Readers</p>
+              <p className="text-[11px] text-slate-400">Manage Directory</p>
+            </div>
+          </Link>
+
           <Link
             href="/admin/theme-customizer"
             className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-3.5 hover:border-blue-500/40 hover:bg-blue-950/20 transition-all"

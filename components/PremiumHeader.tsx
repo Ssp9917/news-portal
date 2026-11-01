@@ -31,6 +31,17 @@ interface CategoryItem {
 
 export default function PremiumHeader() {
   const [categories, setCategories] = useState<CategoryItem[]>([]);
+  const [navItems, setNavItems] = useState<
+    Array<{ name: string; slug: string; href?: string; isExternal?: boolean }>
+  >([
+    { name: "भारत", slug: "national", href: "/category/national" },
+    { name: "शिक्षा", slug: "education", href: "/category/education" },
+    { name: "दुनिया", slug: "world", href: "/category/world" },
+    { name: "बाजार", slug: "business", href: "/category/business" },
+    { name: "खेल", slug: "sports", href: "/category/sports" },
+    { name: "ऑटोमोबाइल", slug: "automobile", href: "/category/automobile" },
+    { name: "मनोरंजन", slug: "entertainment", href: "/category/entertainment" },
+  ]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [categoriesDropdownOpen, setCategoriesDropdownOpen] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
@@ -39,6 +50,7 @@ export default function PremiumHeader() {
   const { user, openAuthModal } = useAuth();
 
   useEffect(() => {
+    // 1. Fetch dynamic categories for dropdown
     fetch("/api/admin/categories")
       .then((res) => res.json())
       .then((data) => {
@@ -47,17 +59,28 @@ export default function PremiumHeader() {
         }
       })
       .catch(() => {});
-  }, []);
 
-  const navItems = [
-    { name: "भारत", slug: "national" },
-    { name: "शिक्षा", slug: "education" },
-    { name: "दुनिया", slug: "world" },
-    { name: "बाजार", slug: "business" },
-    { name: "खेल", slug: "sports" },
-    { name: "ऑटोमोबाइल", slug: "automobile" },
-    { name: "मनोरंजन", slug: "entertainment" },
-  ];
+    // 2. Fetch Navigation Config set by admin
+    fetch("/api/admin/navigation")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && Array.isArray(data.headerLinks) && data.headerLinks.length > 0) {
+          const enabledLinks = data.headerLinks
+            .filter((l: any) => l.isEnabled !== false)
+            .sort((a: any, b: any) => a.order - b.order)
+            .map((l: any) => ({
+              name: locale === "hi" && l.labelHi ? l.labelHi : l.label,
+              href: l.href,
+              slug: l.href.replace("/category/", "").replace(/^\//, ""),
+              isExternal: l.isExternal,
+            }));
+          if (enabledLinks.length > 0) {
+            setNavItems(enabledLinks);
+          }
+        }
+      })
+      .catch(() => {});
+  }, [locale]);
 
   return (
     <>
@@ -150,13 +173,14 @@ export default function PremiumHeader() {
                 )}
               </div>
 
-              {/* Hindi category nav items */}
+              {/* Dynamic nav items */}
               {navItems.map((item) => {
-                const href = withLocale(locale, `/category/${item.slug}`);
-                const isActive = pathname.includes(`/category/${item.slug}`);
+                const targetPath = item.href || `/category/${item.slug}`;
+                const href = targetPath.startsWith("http") ? targetPath : withLocale(locale, targetPath);
+                const isActive = pathname === href || (item.slug && pathname.includes(`/category/${item.slug}`));
                 return (
                   <Link
-                    key={item.slug}
+                    key={item.slug || item.name}
                     href={href}
                     className={`rounded px-3 py-1.5 transition-colors whitespace-nowrap ${
                       isActive
@@ -261,16 +285,20 @@ export default function PremiumHeader() {
                 <MapPin className="h-3.5 w-3.5" />
                 <span>शहर (Local)</span>
               </Link>
-              {navItems.map((item) => (
-                <Link
-                  key={item.slug}
-                  href={withLocale(locale, `/category/${item.slug}`)}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="rounded-lg bg-white/10 p-3 text-white hover:bg-white/20 text-center flex items-center justify-center min-h-[44px]"
-                >
-                  {item.name}
-                </Link>
-              ))}
+              {navItems.map((item) => {
+                const targetPath = item.href || `/category/${item.slug}`;
+                const href = targetPath.startsWith("http") ? targetPath : withLocale(locale, targetPath);
+                return (
+                  <Link
+                    key={item.slug || item.name}
+                    href={href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="rounded-lg bg-white/10 p-3 text-white hover:bg-white/20 text-center flex items-center justify-center min-h-[44px]"
+                  >
+                    {item.name}
+                  </Link>
+                );
+              })}
             </div>
           </div>
         )}
